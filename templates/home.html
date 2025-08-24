@@ -29,7 +29,7 @@
                 <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
               </a>
             {% else %}
-              <a href="{% url 'store:products' %}" class="btn btn-primary">
+              <a href="{% url 'products' %}" class="btn btn-primary">
                 <span>Shop Now</span>
                 <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
               </a>
@@ -46,7 +46,7 @@
           existing an expanded array of leadership.
         </p>
 
-        <a href="{% url 'store:products' %}" class="btn btn-primary">
+        <a href="{% url 'products' %}" class="btn btn-primary">
           <span>Shop Now</span>
           <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
         </a>
@@ -67,7 +67,7 @@
           <div class="collection-card" style="background-image: url('{% if category.image %}{{ category.image.url }}{% else %}{% static 'images/collection-1.jpg' %}{% endif %}')">
             <h3 class="h4 card-title">{{ category.name }}</h3>
 
-            <a href="{% url 'store:products' %}?category={{ category.slug }}" class="btn btn-secondary">
+            <a href="{% url 'products' %}?category={{ category.slug }}" class="btn btn-secondary">
               <span>Explore All</span>
 
               <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
@@ -79,7 +79,7 @@
           <div class="collection-card" style="background-image: url('{% static 'images/collection-1.jpg' %}')">
             <h3 class="h4 card-title">Men Collections</h3>
 
-            <a href="{% url 'store:products' %}?gender=men" class="btn btn-secondary">
+            <a href="{% url 'products' %}?gender=men" class="btn btn-secondary">
               <span>Explore All</span>
 
               <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
@@ -91,7 +91,7 @@
           <div class="collection-card" style="background-image: url('{% static 'images/collection-2.jpg' %}')">
             <h3 class="h4 card-title">Women Collections</h3>
 
-            <a href="{% url 'store:products' %}?gender=women" class="btn btn-secondary">
+            <a href="{% url 'products' %}?gender=women" class="btn btn-secondary">
               <span>Explore All</span>
 
               <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
@@ -103,7 +103,7 @@
           <div class="collection-card" style="background-image: url('{% static 'images/collection-3.jpg' %}')">
             <h3 class="h4 card-title">Sports Collections</h3>
 
-            <a href="{% url 'store:products' %}?category=sports" class="btn btn-secondary">
+            <a href="{% url 'products' %}?category=sports" class="btn btn-secondary">
               <span>Explore All</span>
 
               <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
@@ -176,7 +176,7 @@
                 </li>
 
                 <li class="card-action-item">
-                  <a href="{% url 'store:product_detail' slug=shoe.slug %}" class="card-action-btn" aria-labelledby="card-label-3">
+                  <a href="{% url 'product_detail' slug=shoe.slug %}" class="card-action-btn" aria-labelledby="card-label-3">
                     <ion-icon name="eye-outline"></ion-icon>
                   </a>
 
@@ -197,15 +197,15 @@
             <div class="card-content">
 
               <div class="card-cat">
-                <a href="{% url 'store:products' %}?gender={{ shoe.gender }}" class="card-cat-link">{{ shoe.get_gender_display }}</a>
+                <a href="{% url 'products' %}?gender={{ shoe.gender }}" class="card-cat-link">{{ shoe.get_gender_display }}</a>
                 {% if shoe.category %}
                 /
-                <a href="{% url 'store:products' %}?category={{ shoe.category.slug }}" class="card-cat-link">{{ shoe.category.name }}</a>
+                <a href="{% url 'products' %}?category={{ shoe.category.slug }}" class="card-cat-link">{{ shoe.category.name }}</a>
                 {% endif %}
               </div>
 
               <h3 class="h3 card-title">
-                <a href="{% url 'store:product_detail' slug=shoe.slug %}">{{ shoe.name }}</a>
+                <a href="{% url 'product_detail' slug=shoe.slug %}">{{ shoe.name }}</a>
               </h3>
 
               <data class="card-price" value="{{ shoe.base_price }}">
@@ -254,7 +254,7 @@
 
             <h3 class="h2 card-title">The Summer Sale Off 50%</h3>
 
-            <a href="{% url 'store:products' %}?brand=adidas&is_on_sale=true" class="btn btn-link">
+            <a href="{% url 'products' %}?brand=adidas&is_on_sale=true" class="btn btn-link">
               <span>Shop Now</span>
 
               <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
@@ -268,7 +268,7 @@
 
             <h3 class="h2 card-title">Makes Yourself Keep Sporty</h3>
 
-            <a href="{% url 'store:products' %}?brand=nike" class="btn btn-link">
+            <a href="{% url 'products' %}?brand=nike" class="btn btn-link">
               <span>Shop Now</span>
 
               <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
@@ -291,7 +291,7 @@
       <div class="special-banner" style="background-image: url('{% static 'images/special-banner.jpg' %}')">
         <h2 class="h3 banner-title">New Trend Edition</h2>
 
-        <a href="{% url 'store:products' %}?is_trending=true" class="btn btn-link">
+        <a href="{% url 'products' %}?is_trending=true" class="btn btn-link">
           <span>Explore All</span>
 
           <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
@@ -345,7 +345,7 @@
                   </li>
 
                   <li class="card-action-item">
-                    <a href="{% url 'store:product_detail' slug=shoe.slug %}" class="card-action-btn" aria-labelledby="card-label-3">
+                    <a href="{% url 'product_detail' slug=shoe.slug %}" class="card-action-btn" aria-labelledby="card-label-3">
                       <ion-icon name="eye-outline"></ion-icon>
                     </a>
 
@@ -366,15 +366,15 @@
               <div class="card-content">
 
                 <div class="card-cat">
-                  <a href="{% url 'store:products' %}?gender={{ shoe.gender }}" class="card-cat-link">{{ shoe.get_gender_display }}</a>
+                  <a href="{% url 'products' %}?gender={{ shoe.gender }}" class="card-cat-link">{{ shoe.get_gender_display }}</a>
                   {% if shoe.category %}
                   /
-                  <a href="{% url 'store:products' %}?category={{ shoe.category.slug }}" class="card-cat-link">{{ shoe.category.name }}</a>
+                  <a href="{% url 'products' %}?category={{ shoe.category.slug }}" class="card-cat-link">{{ shoe.category.name }}</a>
                   {% endif %}
                 </div>
 
                 <h3 class="h3 card-title">
-                  <a href="{% url 'store:product_detail' slug=shoe.slug %}">{{ shoe.name }}</a>
+                  <a href="{% url 'product_detail' slug=shoe.slug %}">{{ shoe.name }}</a>
                 </h3>
 
                 <data class="card-price" value="{{ shoe.base_price }}">

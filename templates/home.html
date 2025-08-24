@@ -1,0 +1,640 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Footcap - Find your footware{% endblock %}
+
+{% block content %}
+<article>
+
+  <!-- 
+    - #HERO
+  -->
+
+  <section class="section hero" style="background-image: url('{% static 'images/hero-banner.png' %}')">
+    <div class="container">
+      {% if banners %}
+        {% for banner in banners %}
+          {% if forloop.first %}
+            <h2 class="h1 hero-title">
+              {{ banner.title|default:"New Summer <strong>Shoes Collection</strong>" }}
+            </h2>
+
+            <p class="hero-text">
+              {{ banner.subtitle|default:"Competently expedite alternative benefits whereas leading-edge catalysts for change. Globally leverage existing an expanded array of leadership." }}
+            </p>
+
+            {% if banner.link_url %}
+              <a href="{{ banner.link_url }}" class="btn btn-primary">
+                <span>{{ banner.link_text|default:"Shop Now" }}</span>
+                <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
+              </a>
+            {% else %}
+              <a href="{% url 'store:products' %}" class="btn btn-primary">
+                <span>Shop Now</span>
+                <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
+              </a>
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% else %}
+        <h2 class="h1 hero-title">
+          New Summer <strong>Shoes Collection</strong>
+        </h2>
+
+        <p class="hero-text">
+          Competently expedite alternative benefits whereas leading-edge catalysts for change. Globally leverage
+          existing an expanded array of leadership.
+        </p>
+
+        <a href="{% url 'store:products' %}" class="btn btn-primary">
+          <span>Shop Now</span>
+          <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
+        </a>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- 
+    - #COLLECTION
+  -->
+
+  <section class="section collection">
+    <div class="container">
+
+      <ul class="collection-list has-scrollbar">
+        {% for category in categories %}
+        <li>
+          <div class="collection-card" style="background-image: url('{% if category.image %}{{ category.image.url }}{% else %}{% static 'images/collection-1.jpg' %}{% endif %}')">
+            <h3 class="h4 card-title">{{ category.name }}</h3>
+
+            <a href="{% url 'store:products' %}?category={{ category.slug }}" class="btn btn-secondary">
+              <span>Explore All</span>
+
+              <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
+            </a>
+          </div>
+        </li>
+        {% empty %}
+        <li>
+          <div class="collection-card" style="background-image: url('{% static 'images/collection-1.jpg' %}')">
+            <h3 class="h4 card-title">Men Collections</h3>
+
+            <a href="{% url 'store:products' %}?gender=men" class="btn btn-secondary">
+              <span>Explore All</span>
+
+              <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
+            </a>
+          </div>
+        </li>
+
+        <li>
+          <div class="collection-card" style="background-image: url('{% static 'images/collection-2.jpg' %}')">
+            <h3 class="h4 card-title">Women Collections</h3>
+
+            <a href="{% url 'store:products' %}?gender=women" class="btn btn-secondary">
+              <span>Explore All</span>
+
+              <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
+            </a>
+          </div>
+        </li>
+
+        <li>
+          <div class="collection-card" style="background-image: url('{% static 'images/collection-3.jpg' %}')">
+            <h3 class="h4 card-title">Sports Collections</h3>
+
+            <a href="{% url 'store:products' %}?category=sports" class="btn btn-secondary">
+              <span>Explore All</span>
+
+              <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
+            </a>
+          </div>
+        </li>
+        {% endfor %}
+
+      </ul>
+
+    </div>
+  </section>
+
+  <!-- 
+    - #PRODUCT
+  -->
+
+  <section class="section product">
+    <div class="container">
+
+      <h2 class="h2 section-title">Bestsellers Products</h2>
+
+      <ul class="filter-list">
+        <li>
+          <button class="filter-btn active" data-filter="all">All</button>
+        </li>
+        {% for brand in brands %}
+        <li>
+          <button class="filter-btn" data-filter="{{ brand.slug }}">{{ brand.name }}</button>
+        </li>
+        {% endfor %}
+      </ul>
+
+      <ul class="product-list">
+        {% for shoe in featured_shoes %}
+        <li class="product-item" data-brand="{{ shoe.brand.slug|default:'other' }}">
+          <div class="product-card" tabindex="0">
+
+            <figure class="card-banner">
+              {% if shoe.images.all %}
+                <img src="{{ shoe.images.first.image.url }}" width="312" height="350" loading="lazy"
+                  alt="{{ shoe.name }}" class="image-contain">
+              {% else %}
+                <img src="{% static 'images/product-1.jpg' %}" width="312" height="350" loading="lazy"
+                  alt="{{ shoe.name }}" class="image-contain">
+              {% endif %}
+
+              {% if shoe.is_new_arrival %}
+                <div class="card-badge">New</div>
+              {% elif shoe.discount_percentage %}
+                <div class="card-badge">-{{ shoe.discount_percentage }}%</div>
+              {% endif %}
+
+              <ul class="card-action-list">
+
+                <li class="card-action-item">
+                  <button class="card-action-btn quick-add-btn" data-shoe-id="{{ shoe.id }}" aria-labelledby="card-label-1">
+                    <ion-icon name="cart-outline"></ion-icon>
+                  </button>
+
+                  <div class="card-action-tooltip" id="card-label-1">Add to Cart</div>
+                </li>
+
+                <li class="card-action-item">
+                  <button class="card-action-btn wishlist-btn" data-shoe-id="{{ shoe.id }}" aria-labelledby="card-label-2">
+                    <ion-icon name="heart-outline"></ion-icon>
+                  </button>
+
+                  <div class="card-action-tooltip" id="card-label-2">Add to Wishlist</div>
+                </li>
+
+                <li class="card-action-item">
+                  <a href="{% url 'store:product_detail' slug=shoe.slug %}" class="card-action-btn" aria-labelledby="card-label-3">
+                    <ion-icon name="eye-outline"></ion-icon>
+                  </a>
+
+                  <div class="card-action-tooltip" id="card-label-3">Quick View</div>
+                </li>
+
+                <li class="card-action-item">
+                  <button class="card-action-btn" aria-labelledby="card-label-4">
+                    <ion-icon name="repeat-outline"></ion-icon>
+                  </button>
+
+                  <div class="card-action-tooltip" id="card-label-4">Compare</div>
+                </li>
+
+              </ul>
+            </figure>
+
+            <div class="card-content">
+
+              <div class="card-cat">
+                <a href="{% url 'store:products' %}?gender={{ shoe.gender }}" class="card-cat-link">{{ shoe.get_gender_display }}</a>
+                {% if shoe.category %}
+                /
+                <a href="{% url 'store:products' %}?category={{ shoe.category.slug }}" class="card-cat-link">{{ shoe.category.name }}</a>
+                {% endif %}
+              </div>
+
+              <h3 class="h3 card-title">
+                <a href="{% url 'store:product_detail' slug=shoe.slug %}">{{ shoe.name }}</a>
+              </h3>
+
+              <data class="card-price" value="{{ shoe.base_price }}">
+                ${{ shoe.base_price }}
+                {% if shoe.compare_price and shoe.compare_price > shoe.base_price %}
+                  <del>${{ shoe.compare_price }}</del>
+                {% endif %}
+              </data>
+
+            </div>
+
+          </div>
+        </li>
+        {% empty %}
+        <li class="product-item">
+          <div class="product-card" tabindex="0">
+            <figure class="card-banner">
+              <img src="{% static 'images/product-1.jpg' %}" width="312" height="350" loading="lazy"
+                alt="No products available" class="image-contain">
+            </figure>
+            <div class="card-content">
+              <h3 class="h3 card-title">No products available</h3>
+              <p>Check back soon for new arrivals!</p>
+            </div>
+          </div>
+        </li>
+        {% endfor %}
+
+      </ul>
+
+    </div>
+  </section>
+
+  <!-- 
+    - #CTA
+  -->
+
+  <section class="section cta">
+    <div class="container">
+
+      <ul class="cta-list">
+
+        <li>
+          <div class="cta-card" style="background-image: url('{% static 'images/cta-1.jpg' %}')">
+            <p class="card-subtitle">Adidas Shoes</p>
+
+            <h3 class="h2 card-title">The Summer Sale Off 50%</h3>
+
+            <a href="{% url 'store:products' %}?brand=adidas&is_on_sale=true" class="btn btn-link">
+              <span>Shop Now</span>
+
+              <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
+            </a>
+          </div>
+        </li>
+
+        <li>
+          <div class="cta-card" style="background-image: url('{% static 'images/cta-2.jpg' %}')">
+            <p class="card-subtitle">Nike Shoes</p>
+
+            <h3 class="h2 card-title">Makes Yourself Keep Sporty</h3>
+
+            <a href="{% url 'store:products' %}?brand=nike" class="btn btn-link">
+              <span>Shop Now</span>
+
+              <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
+            </a>
+          </div>
+        </li>
+
+      </ul>
+
+    </div>
+  </section>
+
+  <!-- 
+    - #SPECIAL
+  -->
+
+  <section class="section special">
+    <div class="container">
+
+      <div class="special-banner" style="background-image: url('{% static 'images/special-banner.jpg' %}')">
+        <h2 class="h3 banner-title">New Trend Edition</h2>
+
+        <a href="{% url 'store:products' %}?is_trending=true" class="btn btn-link">
+          <span>Explore All</span>
+
+          <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
+        </a>
+      </div>
+
+      <div class="special-product">
+
+        <h2 class="h2 section-title">
+          <span class="text">Special Products</span>
+
+          <span class="line"></span>
+        </h2>
+
+        <ul class="has-scrollbar">
+          {% for shoe in trending_shoes %}
+          <li class="product-item">
+            <div class="product-card" tabindex="0">
+
+              <figure class="card-banner">
+                {% if shoe.images.all %}
+                  <img src="{{ shoe.images.first.image.url }}" width="312" height="350" loading="lazy"
+                    alt="{{ shoe.name }}" class="image-contain">
+                {% else %}
+                  <img src="{% static 'images/product-1.jpg' %}" width="312" height="350" loading="lazy"
+                    alt="{{ shoe.name }}" class="image-contain">
+                {% endif %}
+
+                {% if shoe.is_new_arrival %}
+                  <div class="card-badge">New</div>
+                {% elif shoe.discount_percentage %}
+                  <div class="card-badge">-{{ shoe.discount_percentage }}%</div>
+                {% endif %}
+
+                <ul class="card-action-list">
+
+                  <li class="card-action-item">
+                    <button class="card-action-btn quick-add-btn" data-shoe-id="{{ shoe.id }}" aria-labelledby="card-label-1">
+                      <ion-icon name="cart-outline"></ion-icon>
+                    </button>
+
+                    <div class="card-action-tooltip" id="card-label-1">Add to Cart</div>
+                  </li>
+
+                  <li class="card-action-item">
+                    <button class="card-action-btn wishlist-btn" data-shoe-id="{{ shoe.id }}" aria-labelledby="card-label-2">
+                      <ion-icon name="heart-outline"></ion-icon>
+                    </button>
+
+                    <div class="card-action-tooltip" id="card-label-2">Add to Wishlist</div>
+                  </li>
+
+                  <li class="card-action-item">
+                    <a href="{% url 'store:product_detail' slug=shoe.slug %}" class="card-action-btn" aria-labelledby="card-label-3">
+                      <ion-icon name="eye-outline"></ion-icon>
+                    </a>
+
+                    <div class="card-action-tooltip" id="card-label-3">Quick View</div>
+                  </li>
+
+                  <li class="card-action-item">
+                    <button class="card-action-btn" aria-labelledby="card-label-4">
+                      <ion-icon name="repeat-outline"></ion-icon>
+                    </button>
+
+                    <div class="card-action-tooltip" id="card-label-4">Compare</div>
+                  </li>
+
+                </ul>
+              </figure>
+
+              <div class="card-content">
+
+                <div class="card-cat">
+                  <a href="{% url 'store:products' %}?gender={{ shoe.gender }}" class="card-cat-link">{{ shoe.get_gender_display }}</a>
+                  {% if shoe.category %}
+                  /
+                  <a href="{% url 'store:products' %}?category={{ shoe.category.slug }}" class="card-cat-link">{{ shoe.category.name }}</a>
+                  {% endif %}
+                </div>
+
+                <h3 class="h3 card-title">
+                  <a href="{% url 'store:product_detail' slug=shoe.slug %}">{{ shoe.name }}</a>
+                </h3>
+
+                <data class="card-price" value="{{ shoe.base_price }}">
+                  ${{ shoe.base_price }}
+                  {% if shoe.compare_price and shoe.compare_price > shoe.base_price %}
+                    <del>${{ shoe.compare_price }}</del>
+                  {% endif %}
+                </data>
+
+              </div>
+
+            </div>
+          </li>
+          {% empty %}
+          <li class="product-item">
+            <div class="product-card" tabindex="0">
+              <figure class="card-banner">
+                <img src="{% static 'images/product-1.jpg' %}" width="312" height="350" loading="lazy"
+                  alt="No special products" class="image-contain">
+              </figure>
+              <div class="card-content">
+                <h3 class="h3 card-title">No special products available</h3>
+              </div>
+            </div>
+          </li>
+          {% endfor %}
+
+        </ul>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 
+    - #SERVICE
+  -->
+
+  <section class="section service">
+    <div class="container">
+
+      <ul class="service-list">
+
+        <li class="service-item">
+          <div class="service-card">
+
+            <div class="card-icon">
+              <img src="{% static 'images/service-1.png' %}" width="53" height="28" loading="lazy" alt="Service icon">
+            </div>
+
+            <div>
+              <h3 class="h4 card-title">Free Shipping</h3>
+
+              <p class="card-text">
+                All orders over <span>KES 5,000</span>
+              </p>
+            </div>
+
+          </div>
+        </li>
+
+        <li class="service-item">
+          <div class="service-card">
+
+            <div class="card-icon">
+              <img src="{% static 'images/service-2.png' %}" width="43" height="35" loading="lazy" alt="Service icon">
+            </div>
+
+            <div>
+              <h3 class="h4 card-title">M-Pesa Payment</h3>
+
+              <p class="card-text">
+                100% secure M-Pesa payment
+              </p>
+            </div>
+
+          </div>
+        </li>
+
+        <li class="service-item">
+          <div class="service-card">
+
+            <div class="card-icon">
+              <img src="{% static 'images/service-3.png' %}" width="40" height="40" loading="lazy" alt="Service icon">
+            </div>
+
+            <div>
+              <h3 class="h4 card-title">Free Returns</h3>
+
+              <p class="card-text">
+                Money back in 7 days
+              </p>
+            </div>
+
+          </div>
+        </li>
+
+        <li class="service-item">
+          <div class="service-card">
+
+            <div class="card-icon">
+              <img src="{% static 'images/service-4.png' %}" width="40" height="40" loading="lazy" alt="Service icon">
+            </div>
+
+            <div>
+              <h3 class="h4 card-title">24/7 Support</h3>
+
+              <p class="card-text">
+                Get Quick Support
+              </p>
+            </div>
+
+          </div>
+        </li>
+
+      </ul>
+
+    </div>
+  </section>
+
+  <!-- 
+    - #INSTA POST
+  -->
+
+  <section class="section insta-post">
+
+    <ul class="insta-post-list has-scrollbar">
+
+      <li class="insta-post-item">
+        <img src="{% static 'images/insta-1.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
+          class="insta-post-banner image-contain">
+
+        <a href="#" class="insta-post-link">
+          <ion-icon name="logo-instagram"></ion-icon>
+        </a>
+      </li>
+
+      <li class="insta-post-item">
+        <img src="{% static 'images/insta-2.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
+          class="insta-post-banner image-contain">
+
+        <a href="#" class="insta-post-link">
+          <ion-icon name="logo-instagram"></ion-icon>
+        </a>
+      </li>
+
+      <li class="insta-post-item">
+        <img src="{% static 'images/insta-3.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
+          class="insta-post-banner image-contain">
+
+        <a href="#" class="insta-post-link">
+          <ion-icon name="logo-instagram"></ion-icon>
+        </a>
+      </li>
+
+      <li class="insta-post-item">
+        <img src="{% static 'images/insta-4.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
+          class="insta-post-banner image-contain">
+
+        <a href="#" class="insta-post-link">
+          <ion-icon name="logo-instagram"></ion-icon>
+        </a>
+      </li>
+
+      <li class="insta-post-item">
+        <img src="{% static 'images/insta-5.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
+          class="insta-post-banner image-contain">
+
+        <a href="#" class="insta-post-link">
+          <ion-icon name="logo-instagram"></ion-icon>
+        </a>
+      </li>
+
+      <li class="insta-post-item">
+        <img src="{% static 'images/insta-6.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
+          class="insta-post-banner image-contain">
+
+        <a href="#" class="insta-post-link">
+          <ion-icon name="logo-instagram"></ion-icon>
+        </a>
+      </li>
+
+      <li class="insta-post-item">
+        <img src="{% static 'images/insta-7.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
+          class="insta-post-banner image-contain">
+
+        <a href="#" class="insta-post-link">
+          <ion-icon name="logo-instagram"></ion-icon>
+        </a>
+      </li>
+
+      <li class="insta-post-item">
+        <img src="{% static 'images/insta-8.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
+          class="insta-post-banner image-contain">
+
+        <a href="#" class="insta-post-link">
+          <ion-icon name="logo-instagram"></ion-icon>
+        </a>
+      </li>
+
+    </ul>
+
+  </section>
+
+</article>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Brand filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const productItems = document.querySelectorAll('.product-item');
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+
+            const filterValue = this.getAttribute('data-filter');
+
+            productItems.forEach(item => {
+                if (filterValue === 'all') {
+                    item.style.display = 'block';
+                } else {
+                    const itemBrand = item.getAttribute('data-brand');
+                    if (itemBrand === filterValue) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                }
+            });
+        });
+    });
+
+    // Quick add to cart functionality
+    const quickAddButtons = document.querySelectorAll('.quick-add-btn');
+    quickAddButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const shoeId = this.getAttribute('data-shoe-id');
+            // For quick add, we'll need to implement a modal or redirect to product page
+            // For now, redirect to product detail page
+            window.location.href = `/product/${shoeId}/`;
+        });
+    });
+
+    // Wishlist functionality
+    const wishlistButtons = document.querySelectorAll('.wishlist-btn');
+    wishlistButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const shoeId = this.getAttribute('data-shoe-id');
+            // Add to wishlist logic here
+            console.log('Add to wishlist:', shoeId);
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,941 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ shoe.name }} - {% if shoe.brand %}{{ shoe.brand.name }}{% endif %} - Footcap{% endblock %}
+
+{% block extra_css %}
+<style>
+.product-detail {
+    padding: 2rem 0;
+}
+
+.product-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+}
+
+.product-images {
+    display: flex;
+    gap: 1rem;
+}
+
+.thumbnail-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.thumbnail {
+    width: 80px;
+    height: 80px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.thumbnail.active {
+    border-color: #007bff;
+}
+
+.thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.main-image {
+    flex: 1;
+    max-width: 500px;
+}
+
+.main-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+}
+
+.product-info h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.product-brand {
+    color: #666;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.product-price {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 1rem;
+}
+
+.product-price del {
+    color: #999;
+    margin-left: 0.5rem;
+}
+
+.product-description {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.product-options {
+    margin-bottom: 2rem;
+}
+
+.option-group {
+    margin-bottom: 1.5rem;
+}
+
+.option-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.color-options {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.color-option {
+    width: 40px;
+    height: 40px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+}
+
+.color-option:hover,
+.color-option.selected {
+    border-color: #007bff;
+}
+
+.color-option::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: var(--color);
+}
+
+.size-options {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.size-option {
+    padding: 0.5rem 1rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.size-option:hover,
+.size-option.selected {
+    border-color: #007bff;
+    background-color: #007bff;
+    color: white;
+}
+
+.size-option.unavailable {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f8f9fa;
+}
+
+.quantity-selector {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.quantity-input {
+    display: flex;
+    align-items: center;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.quantity-btn {
+    background: #f8f9fa;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+.quantity-btn:hover {
+    background: #e9ecef;
+}
+
+.quantity-number {
+    border: none;
+    padding: 0.5rem 1rem;
+    text-align: center;
+    width: 60px;
+}
+
+.add-to-cart-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.add-to-cart-btn:hover {
+    background: #0056b3;
+}
+
+.add-to-cart-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+.product-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 0.75rem;
+    border: 2px solid #ddd;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.action-btn:hover {
+    border-color: #007bff;
+    color: #007bff;
+}
+
+.product-details-tabs {
+    margin-top: 3rem;
+    border-top: 1px solid #eee;
+    padding-top: 2rem;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #eee;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 1rem 0;
+    font-size: 1.1rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+}
+
+.tab-btn.active {
+    border-bottom-color: #007bff;
+    color: #007bff;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.review-item {
+    padding: 1.5rem;
+    border: 1px solid #eee;
+    border-radius: 8px;
+}
+
+.review-header {
+    display: flex;
+    justify-content: between;
+    align-items: start;
+    margin-bottom: 0.5rem;
+}
+
+.review-rating {
+    color: #ffc107;
+    margin-bottom: 0.5rem;
+}
+
+.review-content {
+    color: #666;
+    line-height: 1.6;
+}
+
+.related-products {
+    margin-top: 3rem;
+}
+
+.related-products h3 {
+    margin-bottom: 1.5rem;
+}
+
+.related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.related-product {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+}
+
+.related-product:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+}
+
+.related-product img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.related-product-info {
+    padding: 1rem;
+}
+
+.out-of-stock {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.stock-indicator {
+    color: #28a745;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .product-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .product-images {
+        flex-direction: column;
+    }
+
+    .thumbnail-list {
+        flex-direction: row;
+        overflow-x: auto;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="product-detail">
+    <div class="product-container">
+        
+        <!-- Breadcrumb -->
+        <nav style="margin-bottom: 2rem;">
+            <a href="{% url 'store:home' %}">Home</a> / 
+            <a href="{% url 'store:products' %}">Products</a> / 
+            {% if shoe.category %}
+            <a href="{% url 'store:products' %}?category={{ shoe.category.slug }}">{{ shoe.category.name }}</a> / 
+            {% endif %}
+            <span>{{ shoe.name }}</span>
+        </nav>
+
+        <div class="product-grid">
+            <!-- Product Images -->
+            <div class="product-images">
+                <div class="thumbnail-list">
+                    {% for image in images %}
+                    <div class="thumbnail {% if forloop.first %}active{% endif %}" data-image="{{ image.image.url }}">
+                        <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:shoe.name }}">
+                    </div>
+                    {% empty %}
+                    <div class="thumbnail active" data-image="{% static 'images/product-1.jpg' %}">
+                        <img src="{% static 'images/product-1.jpg' %}" alt="{{ shoe.name }}">
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="main-image">
+                    {% if images %}
+                    <img id="mainImage" src="{{ images.first.image.url }}" alt="{{ shoe.name }}">
+                    {% else %}
+                    <img id="mainImage" src="{% static 'images/product-1.jpg' %}" alt="{{ shoe.name }}">
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="product-info">
+                <div class="product-brand">
+                    {% if shoe.brand %}
+                    <a href="{% url 'store:products' %}?brand={{ shoe.brand.slug }}">{{ shoe.brand.name }}</a>
+                    {% endif %}
+                </div>
+                
+                <h1>{{ shoe.name }}</h1>
+                
+                <div class="product-price">
+                    $<span id="currentPrice">{{ shoe.base_price }}</span>
+                    {% if shoe.compare_price and shoe.compare_price > shoe.base_price %}
+                    <del>${{ shoe.compare_price }}</del>
+                    {% endif %}
+                </div>
+
+                {% if shoe.short_description %}
+                <div class="product-description">
+                    {{ shoe.short_description }}
+                </div>
+                {% endif %}
+
+                <!-- Stock Status -->
+                <div class="stock-status">
+                    {% if shoe.is_in_stock %}
+                    <div class="stock-indicator">✓ In Stock ({{ shoe.total_stock }} available)</div>
+                    {% else %}
+                    <div class="out-of-stock">✗ Out of Stock</div>
+                    {% endif %}
+                </div>
+
+                <!-- Product Options -->
+                <form id="addToCartForm" class="product-options">
+                    {% csrf_token %}
+                    <input type="hidden" name="shoe_id" value="{{ shoe.id }}">
+                    <input type="hidden" name="variant_id" id="selectedVariantId">
+
+                    <!-- Color Selection -->
+                    <div class="option-group">
+                        <label class="option-label">Color:</label>
+                        <div class="color-options">
+                            {% for color in available_colors %}
+                            <div class="color-option" 
+                                 data-color-id="{{ color.id }}" 
+                                 data-color-name="{{ color.name }}"
+                                 style="--color: {{ color.hex_code }}"
+                                 title="{{ color.name }}">
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <span id="selectedColor" class="selected-option"></span>
+                    </div>
+
+                    <!-- Size Selection -->
+                    <div class="option-group">
+                        <label class="option-label">Size:</label>
+                        <div class="size-options">
+                            {% for size in available_sizes %}
+                            <div class="size-option" 
+                                 data-size-id="{{ size.id }}"
+                                 data-size="{{ size.size }}"
+                                 data-system="{{ size.system }}">
+                                {{ size.size }} {{ size.system }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <span id="selectedSize" class="selected-option"></span>
+                    </div>
+
+                    <!-- Quantity Selection -->
+                    <div class="option-group">
+                        <label class="option-label">Quantity:</label>
+                        <div class="quantity-selector">
+                            <div class="quantity-input">
+                                <button type="button" class="quantity-btn" id="decreaseQty">-</button>
+                                <input type="number" name="quantity" id="quantity" class="quantity-number" value="1" min="1" readonly>
+                                <button type="button" class="quantity-btn" id="increaseQty">+</button>
+                            </div>
+                            <span id="stockInfo" class="stock-info"></span>
+                        </div>
+                    </div>
+
+                    <!-- Add to Cart Button -->
+                    <button type="submit" class="add-to-cart-btn" id="addToCartBtn" disabled>
+                        Select Size and Color
+                    </button>
+                </form>
+
+                <!-- Product Actions -->
+                <div class="product-actions">
+                    <button class="action-btn" id="addToWishlist">
+                        <ion-icon name="heart-outline"></ion-icon>
+                        Add to Wishlist
+                    </button>
+                    <button class="action-btn" id="compareProduct">
+                        <ion-icon name="repeat-outline"></ion-icon>
+                        Compare
+                    </button>
+                </div>
+
+                <!-- Product Features -->
+                {% if shoe.features %}
+                <div class="product-features">
+                    <h4>Features:</h4>
+                    <p>{{ shoe.features }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Product Info Grid -->
+                <div class="product-info-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                    <div><strong>SKU:</strong> {{ shoe.sku }}</div>
+                    <div><strong>Category:</strong> 
+                        {% if shoe.category %}
+                        <a href="{% url 'store:products' %}?category={{ shoe.category.slug }}">{{ shoe.category.name }}</a>
+                        {% endif %}
+                    </div>
+                    <div><strong>Gender:</strong> {{ shoe.get_gender_display }}</div>
+                    {% if shoe.material %}
+                    <div><strong>Material:</strong> {{ shoe.material }}</div>
+                    {% endif %}
+                    {% if shoe.sole_material %}
+                    <div><strong>Sole:</strong> {{ shoe.sole_material }}</div>
+                    {% endif %}
+                    <div><strong>Size Range:</strong> {{ shoe.available_size_range }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Details Tabs -->
+        <div class="product-details-tabs">
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-tab="description">Description</button>
+                <button class="tab-btn" data-tab="reviews">Reviews ({{ reviews.count }})</button>
+                <button class="tab-btn" data-tab="shipping">Shipping Info</button>
+            </div>
+
+            <!-- Description Tab -->
+            <div class="tab-content active" id="description">
+                <div style="line-height: 1.6;">
+                    {{ shoe.description|linebreaks }}
+                </div>
+            </div>
+
+            <!-- Reviews Tab -->
+            <div class="tab-content" id="reviews">
+                {% if reviews %}
+                <div class="reviews-summary" style="margin-bottom: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                    <h4>Customer Reviews</h4>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div class="average-rating" style="font-size: 2rem; font-weight: bold;">{{ shoe.average_rating|floatformat:1 }}/5</div>
+                        <div>
+                            <div class="review-stars">
+                                {% for i in "12345" %}
+                                    {% if i|add:0 <= shoe.average_rating %}
+                                        <span style="color: #ffc107;">★</span>
+                                    {% else %}
+                                        <span style="color: #ddd;">★</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div>Based on {{ shoe.review_count }} review{{ shoe.review_count|pluralize }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reviews-list">
+                    {% for review in reviews %}
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div>
+                                <strong>{{ review.user.first_name|default:review.user.username }}</strong>
+                                {% if review.is_verified_purchase %}
+                                <span style="color: #28a745; font-size: 0.8rem;">✓ Verified Purchase</span>
+                                {% endif %}
+                            </div>
+                            <div style="font-size: 0.9rem; color: #666;">{{ review.created_at|date:"M d, Y" }}</div>
+                        </div>
+                        
+                        <div class="review-rating">
+                            {% for i in "12345" %}
+                                {% if i|add:0 <= review.rating %}
+                                    <span>★</span>
+                                {% else %}
+                                    <span style="color: #ddd;">★</span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        {% if review.title %}
+                        <h5>{{ review.title }}</h5>
+                        {% endif %}
+
+                        <div class="review-content">
+                            {{ review.content }}
+                        </div>
+
+                        {% if review.fit_rating or review.comfort_rating or review.quality_rating %}
+                        <div style="margin-top: 1rem; display: flex; gap: 2rem; font-size: 0.9rem;">
+                            {% if review.fit_rating %}
+                            <div><strong>Fit:</strong> {{ review.fit_rating }}/5</div>
+                            {% endif %}
+                            {% if review.comfort_rating %}
+                            <div><strong>Comfort:</strong> {{ review.comfort_rating }}/5</div>
+                            {% endif %}
+                            {% if review.quality_rating %}
+                            <div><strong>Quality:</strong> {{ review.quality_rating }}/5</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div style="text-align: center; padding: 2rem; color: #666;">
+                    <p>No reviews yet. Be the first to review this product!</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Shipping Tab -->
+            <div class="tab-content" id="shipping">
+                <div style="line-height: 1.8;">
+                    <h4>Shipping Information</h4>
+                    <ul style="margin: 1rem 0; padding-left: 2rem;">
+                        <li>Free shipping on orders over KES 5,000</li>
+                        <li>Standard delivery: 1-3 business days within Nairobi</li>
+                        <li>Countrywide delivery: 2-5 business days</li>
+                        <li>Express delivery available for additional cost</li>
+                    </ul>
+                    
+                    <h4>Return Policy</h4>
+                    <ul style="margin: 1rem 0; padding-left: 2rem;">
+                        <li>7-day return policy</li>
+                        <li>Items must be in original condition</li>
+                        <li>Free returns for defective products</li>
+                        <li>Customer pays return shipping for exchanges</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Products -->
+        {% if related_shoes %}
+        <div class="related-products">
+            <h3>Related Products</h3>
+            <div class="related-grid">
+                {% for related_shoe in related_shoes %}
+                <a href="{% url 'store:product_detail' slug=related_shoe.slug %}" class="related-product">
+                    {% if related_shoe.images.all %}
+                    <img src="{{ related_shoe.images.first.image.url }}" alt="{{ related_shoe.name }}">
+                    {% else %}
+                    <img src="{% static 'images/product-1.jpg' %}" alt="{{ related_shoe.name }}">
+                    {% endif %}
+                    <div class="related-product-info">
+                        <h5>{{ related_shoe.name }}</h5>
+                        <div class="price">${{ related_shoe.base_price }}</div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Product variants data
+const variants = {{ variants_json|safe }};
+const shoeId = {{ shoe.id }};
+
+// DOM elements
+const colorOptions = document.querySelectorAll('.color-option');
+const sizeOptions = document.querySelectorAll('.size-option');
+const addToCartBtn = document.getElementById('addToCartBtn');
+const selectedVariantId = document.getElementById('selectedVariantId');
+const currentPrice = document.getElementById('currentPrice');
+const quantity = document.getElementById('quantity');
+const stockInfo = document.getElementById('stockInfo');
+const selectedColor = document.getElementById('selectedColor');
+const selectedSize = document.getElementById('selectedSize');
+
+let currentColorId = null;
+let currentSizeId = null;
+let currentVariant = null;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    initializeImageGallery();
+    initializeProductOptions();
+    initializeTabs();
+    initializeQuantityControls();
+    initializeAddToCart();
+});
+
+function initializeImageGallery() {
+    const thumbnails = document.querySelectorAll('.thumbnail');
+    const mainImage = document.getElementById('mainImage');
+
+    thumbnails.forEach(thumbnail => {
+        thumbnail.addEventListener('click', function() {
+            thumbnails.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            mainImage.src = this.dataset.image;
+        });
+    });
+}
+
+function initializeProductOptions() {
+    // Color selection
+    colorOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            colorOptions.forEach(o => o.classList.remove('selected'));
+            this.classList.add('selected');
+            currentColorId = this.dataset.colorId;
+            selectedColor.textContent = `Color: ${this.dataset.colorName}`;
+            updateSizeAvailability();
+            checkVariantAvailability();
+        });
+    });
+
+    // Size selection
+    sizeOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            if (this.classList.contains('unavailable')) return;
+            
+            sizeOptions.forEach(o => o.classList.remove('selected'));
+            this.classList.add('selected');
+            currentSizeId = this.dataset.sizeId;
+            selectedSize.textContent = `Size: ${this.dataset.size} ${this.dataset.system}`;
+            checkVariantAvailability();
+        });
+    });
+}
+
+function updateSizeAvailability() {
+    if (!currentColorId) return;
+
+    sizeOptions.forEach(sizeOption => {
+        const sizeId = sizeOption.dataset.sizeId;
+        const variantKey = `${currentColorId}-${sizeId}`;
+        const variant = variants[variantKey];
+        
+        if (variant && variant.stock > 0) {
+            sizeOption.classList.remove('unavailable');
+        } else {
+            sizeOption.classList.add('unavailable');
+            if (sizeOption.classList.contains('selected')) {
+                sizeOption.classList.remove('selected');
+                currentSizeId = null;
+                selectedSize.textContent = '';
+                checkVariantAvailability();
+            }
+        }
+    });
+}
+
+function checkVariantAvailability() {
+    if (currentColorId && currentSizeId) {
+        const variantKey = `${currentColorId}-${currentSizeId}`;
+        currentVariant = variants[variantKey];
+        
+        if (currentVariant && currentVariant.stock > 0) {
+            selectedVariantId.value = currentVariant.id;
+            currentPrice.textContent = currentVariant.price;
+            stockInfo.textContent = `${currentVariant.stock} in stock`;
+            addToCartBtn.disabled = false;
+            addToCartBtn.textContent = 'Add to Cart';
+            quantity.max = currentVariant.stock;
+        } else {
+            selectedVariantId.value = '';
+            addToCartBtn.disabled = true;
+            addToCartBtn.textContent = 'Out of Stock';
+            stockInfo.textContent = 'Out of stock';
+        }
+    } else {
+        addToCartBtn.disabled = true;
+        addToCartBtn.textContent = 'Select Size and Color';
+        stockInfo.textContent = '';
+    }
+}
+
+function initializeQuantityControls() {
+    const decreaseBtn = document.getElementById('decreaseQty');
+    const increaseBtn = document.getElementById('increaseQty');
+
+    decreaseBtn.addEventListener('click', function() {
+        if (quantity.value > 1) {
+            quantity.value = parseInt(quantity.value) - 1;
+        }
+    });
+
+    increaseBtn.addEventListener('click', function() {
+        const maxQty = parseInt(quantity.max) || 99;
+        if (parseInt(quantity.value) < maxQty) {
+            quantity.value = parseInt(quantity.value) + 1;
+        }
+    });
+}
+
+function initializeAddToCart() {
+    const form = document.getElementById('addToCartForm');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!currentVariant) {
+            alert('Please select size and color');
+            return;
+        }
+
+        const formData = new FormData(form);
+        
+        // Show loading state
+        addToCartBtn.textContent = 'Adding...';
+        addToCartBtn.disabled = true;
+
+        fetch('{% url "store:add_to_cart" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update cart count in header
+                const cartCount = document.getElementById('cart-count');
+                const cartTotal = document.getElementById('cart-total');
+                if (cartCount) cartCount.textContent = data.cart_count;
+                if (cartTotal) cartTotal.innerHTML = `Basket: <strong>${data.cart_total}</strong>`;
+                
+                // Show success message
+                showNotification('Product added to cart successfully!', 'success');
+                
+                // Reset button
+                addToCartBtn.textContent = 'Add to Cart';
+                addToCartBtn.disabled = false;
+            } else {
+                showNotification(data.message, 'error');
+                addToCartBtn.textContent = 'Add to Cart';
+                addToCartBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            showNotification('An error occurred. Please try again.', 'error');
+            addToCartBtn.textContent = 'Add to Cart';
+            addToCartBtn.disabled = false;
+        });
+    });
+}
+
+function initializeTabs() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            this.classList.add('active');
+            document.getElementById(this.dataset.tab).classList.add('active');
+        });
+    });
+}
+
+function showNotification(message, type) {
+    // Create and show notification
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        background: ${type === 'success' ? '#28a745' : '#dc3545'};
+        animation: slideIn 0.3s ease;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease forwards';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Add CSS for animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+
+// Wishlist functionality
+document.getElementById('addToWishlist').addEventListener('click', function() {
+    // Add wishlist logic here
+    showNotification('Added to wishlist!', 'success');
+});
+
+// Compare functionality
+document.getElementById('compareProduct').addEventListener('click', function() {
+    // Add compare logic here
+    showNotification('Added to comparison!', 'success');
+});
+</script>
+{% endblock %}

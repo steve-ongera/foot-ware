@@ -5,7 +5,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    #path("",include("ecommerce.urls")),
+    path("",include("ecommerce.urls")),
 ]
 
 # Serve media and static files in development

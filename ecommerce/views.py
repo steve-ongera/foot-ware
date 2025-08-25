@@ -467,7 +467,7 @@ def category_detail(request, slug):
         'total_products': paginator.count,
     }
     
-    return render(request, 'products/category-detail.html', context)
+    return render(request, 'category-detail.html', context)
 
 
 def cart_summary(request):

@@ -735,17 +735,20 @@
             <div class="breadcrumb-item">
                 <a href="{% url 'home' %}">Home</a>
             </div>
-            <span class="breadcrumb-separator">›</span>
+            <span class="breadcrumb-separator">/</span>
             <div class="breadcrumb-item">
                 <a href="{% url 'products' %}">Products</a>
             </div>
             {% if shoe.category %}
-            <span class="breadcrumb-separator">›</span>
-            <div class="breadcrumb-item">
-                <a href="{% url 'products' %}?category={{ shoe.category.slug }}">{{ shoe.category.name }}</a>
-            </div>
+                <span class="breadcrumb-separator">/</span>
+                <div class="breadcrumb-item">
+                    <a href="{% url 'category_detail' slug=shoe.category.slug %}">
+                        {{ shoe.category.name }}
+                    </a>
+                </div>
             {% endif %}
-            <span class="breadcrumb-separator">›</span>
+
+            <span class="breadcrumb-separator">/</span>
             <div class="breadcrumb-item">
                 <span class="breadcrumb-current">{{ shoe.name }}</span>
             </div>

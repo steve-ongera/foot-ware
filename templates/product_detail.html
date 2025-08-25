@@ -1097,21 +1097,93 @@
         {% if related_shoes %}
         <div class="related-products">
             <h3>Related Products</h3>
-            <div class="related-grid">
+            <ul class="product-list related-product-list">
                 {% for related_shoe in related_shoes %}
-                <a href="{% url 'product_detail' slug=related_shoe.slug %}" class="related-product">
-                    {% if related_shoe.images.all %}
-                    <img src="{{ related_shoe.images.first.image.url }}" alt="{{ related_shoe.name }}">
-                    {% else %}
-                    <img src="{% static 'images/product-1.jpg' %}" alt="{{ related_shoe.name }}">
-                    {% endif %}
-                    <div class="related-product-info">
-                        <h5>{{ related_shoe.name }}</h5>
-                        <div class="price">KES {{ related_shoe.base_price }}</div>
+                <li class="product-item" data-brand="{{ related_shoe.brand.slug|default:'other' }}">
+                    <div class="product-card" tabindex="0">
+                        <figure class="card-banner">
+                            {% if related_shoe.images.all %}
+                                <img src="{{ related_shoe.images.first.image.url }}" width="312" height="350" loading="lazy"
+                                  alt="{{ related_shoe.name }}" class="image-contain">
+                            {% else %}
+                                <img src="{% static 'images/product-1.jpg' %}" width="312" height="350" loading="lazy"
+                                  alt="{{ related_shoe.name }}" class="image-contain">
+                            {% endif %}
+
+                            {% if related_shoe.is_new_arrival %}
+                                <div class="card-badge">New</div>
+                            {% elif related_shoe.discount_percentage %}
+                                <div class="card-badge">-{{ related_shoe.discount_percentage }}%</div>
+                            {% endif %}
+
+                            <ul class="card-action-list">
+                                <li class="card-action-item">
+                                    <button class="card-action-btn quick-add-btn" data-shoe-id="{{ related_shoe.id }}" aria-labelledby="related-card-label-1-{{ forloop.counter }}">
+                                        <ion-icon name="cart-outline"></ion-icon>
+                                    </button>
+                                    <div class="card-action-tooltip" id="related-card-label-1-{{ forloop.counter }}">Add to Cart</div>
+                                </li>
+
+                                <li class="card-action-item">
+                                    <button class="card-action-btn wishlist-btn" data-shoe-id="{{ related_shoe.id }}" aria-labelledby="related-card-label-2-{{ forloop.counter }}">
+                                        <ion-icon name="heart-outline"></ion-icon>
+                                    </button>
+                                    <div class="card-action-tooltip" id="related-card-label-2-{{ forloop.counter }}">Add to Wishlist</div>
+                                </li>
+
+                                <li class="card-action-item">
+                                    <a href="{% url 'product_detail' slug=related_shoe.slug %}" class="card-action-btn" aria-labelledby="related-card-label-3-{{ forloop.counter }}">
+                                        <ion-icon name="eye-outline"></ion-icon>
+                                    </a>
+                                    <div class="card-action-tooltip" id="related-card-label-3-{{ forloop.counter }}">Quick View</div>
+                                </li>
+
+                                <li class="card-action-item">
+                                    <button class="card-action-btn" aria-labelledby="related-card-label-4-{{ forloop.counter }}">
+                                        <ion-icon name="repeat-outline"></ion-icon>
+                                    </button>
+                                    <div class="card-action-tooltip" id="related-card-label-4-{{ forloop.counter }}">Compare</div>
+                                </li>
+                            </ul>
+                        </figure>
+
+                        <div class="card-content">
+                            <div class="card-cat">
+                                <a href="{% url 'products' %}?gender={{ related_shoe.gender }}" class="card-cat-link">{{ related_shoe.get_gender_display }}</a>
+                                {% if related_shoe.category %}
+                                /
+                                <a href="{% url 'products' %}?category={{ related_shoe.category.slug }}" class="card-cat-link">{{ related_shoe.category.name }}</a>
+                                {% endif %}
+                            </div>
+
+                            <h3 class="h3 card-title">
+                                <a href="{% url 'product_detail' slug=related_shoe.slug %}">{{ related_shoe.name }}</a>
+                            </h3>
+
+                            <data class="card-price" value="{{ related_shoe.base_price }}">
+                                KES{{ related_shoe.base_price }}
+                                {% if related_shoe.compare_price and related_shoe.compare_price > related_shoe.base_price %}
+                                  <del>KES{{ related_shoe.compare_price }}</del>
+                                {% endif %}
+                            </data>
+                        </div>
                     </div>
-                </a>
+                </li>
+                {% empty %}
+                <li class="product-item">
+                    <div class="product-card" tabindex="0">
+                        <figure class="card-banner">
+                            <img src="{% static 'images/product-1.jpg' %}" width="312" height="350" loading="lazy"
+                              alt="No related products available" class="image-contain">
+                        </figure>
+                        <div class="card-content">
+                            <h3 class="h3 card-title">No related products available</h3>
+                            <p>Check back soon for more products!</p>
+                        </div>
+                    </div>
+                </li>
                 {% endfor %}
-            </div>
+            </ul>
         </div>
         {% endif %}
 

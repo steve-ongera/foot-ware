@@ -504,65 +504,8 @@ def cart_summary(request):
         'delivery_areas': delivery_areas,
     }
     
-    return render(request, 'cart/cart-summary.html', context)
+    return render(request, 'cart-summary.html', context)
 
-
-@require_POST
-def add_to_cart(request):
-    """Add item to cart via AJAX"""
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        try:
-            variant_id = request.POST.get('variant_id')
-            quantity = int(request.POST.get('quantity', 1))
-            
-            if not variant_id:
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Please select size and color'
-                })
-            
-            variant = get_object_or_404(ShoeVariant, id=variant_id)
-            
-            if quantity > variant.stock_quantity:
-                return JsonResponse({
-                    'success': False,
-                    'message': f'Only {variant.stock_quantity} items available'
-                })
-            
-            cart = get_or_create_cart(request)
-            cart_item, created = CartItem.objects.get_or_create(
-                cart=cart,
-                variant=variant,
-                defaults={
-                    'shoe': variant.shoe,
-                    'quantity': quantity
-                }
-            )
-            
-            if not created:
-                new_quantity = cart_item.quantity + quantity
-                if new_quantity > variant.stock_quantity:
-                    return JsonResponse({
-                        'success': False,
-                        'message': f'Cannot add more items. Only {variant.stock_quantity} available'
-                    })
-                cart_item.quantity = new_quantity
-                cart_item.save()
-            
-            return JsonResponse({
-                'success': True,
-                'message': 'Item added to cart successfully',
-                'cart_count': cart.total_items,
-                'cart_total': f'KES {cart.total_price:,.2f}'
-            })
-            
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'message': 'An error occurred while adding to cart'
-            })
-    
-    return JsonResponse({'success': False, 'message': 'Invalid request'})
 
 
 @require_POST

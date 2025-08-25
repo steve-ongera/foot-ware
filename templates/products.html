@@ -1,0 +1,1389 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if selected_category %}
+        {{ selected_category.name }} - Products
+    {% else %}
+        Products
+    {% endif %}
+    - Footcap
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.products-page {
+    padding: 2rem 0;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.breadcrumb-item a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+    text-decoration: underline;
+}
+
+.breadcrumb-separator {
+    color: #6c757d;
+}
+
+.breadcrumb-current {
+    color: #495057;
+    font-weight: 600;
+}
+
+/* Page Header */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.results-info {
+    color: #666;
+    font-size: 0.95rem;
+}
+
+/* Search Bar */
+.search-section {
+    margin-bottom: 2rem;
+}
+
+.search-form {
+    display: flex;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.search-input {
+    flex: 1;
+    padding: 1rem;
+    border: 2px solid #ddd;
+    border-radius: 8px 0 0 8px;
+    font-size: 1rem;
+}
+
+.search-btn {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 0 8px 8px 0;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+}
+
+/* Main Layout */
+.products-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 2rem;
+}
+
+/* Filters Sidebar */
+.filters-sidebar {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 2rem;
+    height: fit-content;
+    position: sticky;
+    top: 2rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.filters-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.filters-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.clear-filters {
+    background: none;
+    border: none;
+    color: #007bff;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.filter-group {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.filter-group:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.filter-title {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.filter-toggle {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.filter-content {
+    display: block;
+}
+
+.filter-content.collapsed {
+    display: none;
+}
+
+/* Price Range Filter */
+.price-range {
+    margin-bottom: 1rem;
+}
+
+.price-inputs {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.price-input {
+    width: 80px;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.price-separator {
+    color: #666;
+}
+
+/* Filter Options */
+.filter-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.filter-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0;
+}
+
+.filter-checkbox {
+    width: 16px;
+    height: 16px;
+}
+
+.filter-label {
+    font-size: 0.9rem;
+    color: #555;
+    cursor: pointer;
+    flex: 1;
+}
+
+.filter-count {
+    font-size: 0.8rem;
+    color: #666;
+    background: #f8f9fa;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+}
+
+/* Color Filter */
+.color-filter {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(35px, 1fr));
+    gap: 0.5rem;
+}
+
+.color-option {
+    width: 35px;
+    height: 35px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.color-option:hover,
+.color-option.selected {
+    border-color: #007bff;
+    transform: scale(1.1);
+}
+
+.color-option::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background-color: var(--color);
+}
+
+/* Size Filter */
+.size-filter {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(45px, 1fr));
+    gap: 0.5rem;
+}
+
+.size-option {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.size-option:hover,
+.size-option.selected {
+    border-color: #007bff;
+    background: #007bff;
+    color: white;
+}
+
+/* Products Area */
+.products-area {
+    flex: 1;
+}
+
+.products-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.view-options {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.view-btn {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.view-btn.active,
+.view-btn:hover {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.sort-dropdown {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+}
+
+/* Active Filters */
+.active-filters {
+    margin-bottom: 1rem;
+}
+
+.filter-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.filter-tag {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #007bff;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.remove-filter {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+/* Product Grid */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.product-card {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.product-card:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
+}
+
+.product-image {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 1;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image img {
+    transform: scale(1.1);
+}
+
+.product-badge {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: #007bff;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    z-index: 2;
+}
+
+.product-badge.sale {
+    background: #dc3545;
+}
+
+.product-badge.new {
+    background: #28a745;
+}
+
+.product-actions {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    opacity: 0;
+    transform: translateX(20px);
+    transition: all 0.3s ease;
+}
+
+.product-card:hover .product-actions {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.action-btn {
+    width: 40px;
+    height: 40px;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background: #007bff;
+    color: white;
+    transform: scale(1.1);
+}
+
+.product-info {
+    padding: 1.5rem;
+}
+
+.product-category {
+    font-size: 0.8rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.product-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+}
+
+.product-title a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.product-title a:hover {
+    color: #007bff;
+}
+
+.product-brand {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.product-price {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.current-price {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #007bff;
+}
+
+.original-price {
+    font-size: 1rem;
+    color: #999;
+    text-decoration: line-through;
+}
+
+.discount-badge {
+    background: #dc3545;
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.product-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.stars {
+    color: #ffc107;
+}
+
+.rating-count {
+    color: #666;
+}
+
+.add-to-cart-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.add-to-cart-btn:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.add-to-cart-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.stock-status {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.in-stock {
+    color: #28a745;
+}
+
+.out-of-stock {
+    color: #dc3545;
+}
+
+.low-stock {
+    color: #ffc107;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 3rem;
+    padding: 2rem;
+}
+
+.pagination-btn {
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
+    background: white;
+    color: #333;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.pagination-btn:hover {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+    text-decoration: none;
+}
+
+.pagination-btn.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f8f9fa;
+}
+
+.pagination-info {
+    margin: 0 1rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* No Results */
+.no-results {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #666;
+}
+
+.no-results-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: #ddd;
+}
+
+.no-results h3 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.no-results p {
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.clear-filters-btn {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.clear-filters-btn:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .products-layout {
+        grid-template-columns: 280px 1fr;
+        gap: 1.5rem;
+    }
+    
+    .products-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 0.5rem;
+    }
+    
+    .products-layout {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .filters-sidebar {
+        position: static;
+        padding: 1.5rem;
+    }
+    
+    .products-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .products-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .search-form {
+        max-width: none;
+    }
+    
+    .price-inputs {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .price-input {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .pagination {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+    
+    .pagination-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="products-page">
+    <div class="container">
+        
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <div class="breadcrumb-item">
+                <a href="{% url 'home' %}">Home</a>
+            </div>
+            <span class="breadcrumb-separator">›</span>
+            <div class="breadcrumb-item">
+                {% if selected_category %}
+                    <a href="{% url 'products' %}">Products</a>
+                {% else %}
+                    <span class="breadcrumb-current">Products</span>
+                {% endif %}
+            </div>
+            {% if selected_category %}
+            <span class="breadcrumb-separator">›</span>
+            <div class="breadcrumb-item">
+                <span class="breadcrumb-current">{{ selected_category.name }}</span>
+            </div>
+            {% endif %}
+        </nav>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">
+                    {% if selected_category %}
+                        {{ selected_category.name }}
+                    {% elif search_query %}
+                        Search Results
+                    {% else %}
+                        All Products
+                    {% endif %}
+                </h1>
+                <div class="results-info">
+                    {% if search_query %}
+                        Showing {{ total_products }} result{{ total_products|pluralize }} for "{{ search_query }}"
+                    {% else %}
+                        Showing {{ total_products }} product{{ total_products|pluralize }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <form class="search-form" method="get">
+                <input type="text" name="search" class="search-input" 
+                       placeholder="Search for shoes, brands, categories..." 
+                       value="{{ search_query }}">
+                <button type="submit" class="search-btn">
+                    <ion-icon name="search-outline"></ion-icon>
+                    Search
+                </button>
+            </form>
+        </div>
+
+        <!-- Main Layout -->
+        <div class="products-layout">
+            
+            <!-- Filters Sidebar -->
+            <aside class="filters-sidebar">
+                <div class="filters-header">
+                    <h3 class="filters-title">Filters</h3>
+                    <button type="button" class="clear-filters" onclick="clearAllFilters()">
+                        Clear All
+                    </button>
+                </div>
+
+                <form id="filtersForm" method="get">
+                    {% if search_query %}
+                        <input type="hidden" name="search" value="{{ search_query }}">
+                    {% endif %}
+
+                    <!-- Price Range Filter -->
+                    <div class="filter-group">
+                        <div class="filter-title" onclick="toggleFilter('price')">
+                            Price Range
+                            <span class="filter-toggle">−</span>
+                        </div>
+                        <div class="filter-content" id="price-content">
+                            <div class="price-range">
+                                <div class="price-inputs">
+                                    <input type="number" name="min_price" class="price-input" 
+                                           placeholder="Min" value="{{ current_filters.min_price }}" 
+                                           min="0" max="{{ price_range.max_price }}">
+                                    <span class="price-separator">-</span>
+                                    <input type="number" name="max_price" class="price-input" 
+                                           placeholder="Max" value="{{ current_filters.max_price }}" 
+                                           min="{{ price_range.min_price }}" max="{{ price_range.max_price }}">
+                                </div>
+                                {% if price_range.min_price and price_range.max_price %}
+                                <small style="color: #666; margin-top: 0.5rem; display: block;">
+                                    Range: KES {{ price_range.min_price }} - KES {{ price_range.max_price }}
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Filter -->
+                    {% if not selected_category %}
+                    <div class="filter-group">
+                        <div class="filter-title" onclick="toggleFilter('category')">
+                            Categories
+                            <span class="filter-toggle">−</span>
+                        </div>
+                        <div class="filter-content" id="category-content">
+                            <div class="filter-options">
+                                {% for category in categories %}
+                                <label class="filter-option">
+                                    <input type="radio" name="category" value="{{ category.slug }}" 
+                                           class="filter-checkbox" 
+                                           {% if current_filters.category == category.slug %}checked{% endif %}>
+                                    <span class="filter-label">{{ category.name }}</span>
+                                    <span class="filter-count">{{ category.shoes.count }}</span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Brand Filter -->
+                    <div class="filter-group">
+                        <div class="filter-title" onclick="toggleFilter('brand')">
+                            Brands
+                            <span class="filter-toggle">−</span>
+                        </div>
+                        <div class="filter-content" id="brand-content">
+                            <div class="filter-options">
+                                {% for brand in brands %}
+                                <label class="filter-option">
+                                    <input type="radio" name="brand" value="{{ brand.slug }}" 
+                                           class="filter-checkbox" 
+                                           {% if current_filters.brand == brand.slug %}checked{% endif %}>
+                                    <span class="filter-label">{{ brand.name }}</span>
+                                    <span class="filter-count">{{ brand.shoes.count }}</span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gender Filter -->
+                    <div class="filter-group">
+                        <div class="filter-title" onclick="toggleFilter('gender')">
+                            Gender
+                            <span class="filter-toggle">−</span>
+                        </div>
+                        <div class="filter-content" id="gender-content">
+                            <div class="filter-options">
+                                {% for value, label in shoes.model.GENDER_CHOICES %}
+                                <label class="filter-option">
+                                    <input type="radio" name="gender" value="{{ value }}" 
+                                           class="filter-checkbox" 
+                                           {% if current_filters.gender == value %}checked{% endif %}>
+                                    <span class="filter-label">{{ label }}</span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Color Filter -->
+                    <div class="filter-group">
+                        <div class="filter-title" onclick="toggleFilter('color')">
+                            Colors
+                            <span class="filter-toggle">−</span>
+                        </div>
+                        <div class="filter-content" id="color-content">
+                            <div class="color-filter">
+                                {% for color in colors %}
+                                <input type="radio" name="color" value="{{ color.id }}" 
+                                       id="color-{{ color.id }}" style="display: none;" 
+                                       {% if current_filters.color == color.id|stringformat:"s" %}checked{% endif %}>
+                                <label for="color-{{ color.id }}" class="color-option 
+                                       {% if current_filters.color == color.id|stringformat:"s" %}selected{% endif %}" 
+                                       style="--color: {{ color.hex_code }}" 
+                                       title="{{ color.name }}">
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Size Filter -->
+                    <div class="filter-group">
+                        <div class="filter-title" onclick="toggleFilter('size')">
+                            Sizes
+                            <span class="filter-toggle">−</span>
+                        </div>
+                        <div class="filter-content" id="size-content">
+                            <div class="size-filter">
+                                {% for size in sizes %}
+                                <input type="radio" name="size" value="{{ size.id }}" 
+                                       id="size-{{ size.id }}" style="display: none;" 
+                                       {% if current_filters.size == size.id|stringformat:"s" %}checked{% endif %}>
+                                <label for="size-{{ size.id }}" class="size-option 
+                                       {% if current_filters.size == size.id|stringformat:"s" %}selected{% endif %}">
+                                    {{ size.size }}
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Special Filters -->
+                    <div class="filter-group">
+                        <div class="filter-title" onclick="toggleFilter('special')">
+                            Special
+                            <span class="filter-toggle">−</span>
+                        </div>
+                        <div class="filter-content" id="special-content">
+                            <div class="filter-options">
+                                <label class="filter-option">
+                                    <input type="checkbox" name="featured" value="1" 
+                                           class="filter-checkbox" 
+                                           {% if request.GET.featured %}checked{% endif %}>
+                                    <span class="filter-label">Featured</span>
+                                </label>
+                                <label class="filter-option">
+                                    <input type="checkbox" name="new_arrival" value="1" 
+                                           class="filter-checkbox" 
+                                           {% if request.GET.new_arrival %}checked{% endif %}>
+                                    <span class="filter-label">New Arrivals</span>
+                                </label>
+                                <label class="filter-option">
+                                    <input type="checkbox" name="on_sale" value="1" 
+                                           class="filter-checkbox" 
+                                           {% if request.GET.on_sale %}checked{% endif %}>
+                                    <span class="filter-label">On Sale</span>
+                                </label>
+                                <label class="filter-option">
+                                    <input type="checkbox" name="in_stock" value="1" 
+                                           class="filter-checkbox" 
+                                           {% if request.GET.in_stock %}checked{% endif %}>
+                                    <span class="filter-label">In Stock</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="add-to-cart-btn" style="margin-top: 2rem;">
+                        Apply Filters
+                    </button>
+                </form>
+            </aside>
+
+            <!-- Products Area -->
+            <main class="products-area">
+                
+                <!-- Active Filters -->
+                {% if current_filters.category or current_filters.brand or current_filters.gender or current_filters.color or current_filters.size or current_filters.min_price or current_filters.max_price %}
+                <div class="active-filters">
+                    <div class="filter-tags">
+                        {% if current_filters.category %}
+                        <div class="filter-tag">
+                            Category: {{ selected_category.name }}
+                            <button type="button" class="remove-filter" onclick="removeFilter('category')">×</button>
+                        </div>
+                        {% endif %}
+                        {% if current_filters.brand %}
+                        <div class="filter-tag">
+                            Brand: {{ selected_brand.name }}
+                            <button type="button" class="remove-filter" onclick="removeFilter('brand')">×</button>
+                        </div>
+                        {% endif %}
+                        {% if current_filters.gender %}
+                        <div class="filter-tag">
+                            Gender: {{ current_filters.gender|title }}
+                            <button type="button" class="remove-filter" onclick="removeFilter('gender')">×</button>
+                        </div>
+                        {% endif %}
+                        {% if current_filters.color %}
+                        <div class="filter-tag">
+                            Color: {{ selected_color.name }}
+                            <button type="button" class="remove-filter" onclick="removeFilter('color')">×</button>
+                        </div>
+                        {% endif %}
+                        {% if current_filters.size %}
+                        <div class="filter-tag">
+                            Size: {{ selected_size.size }} {{ selected_size.system }}
+                            <button type="button" class="remove-filter" onclick="removeFilter('size')">×</button>
+                        </div>
+                        {% endif %}
+                        {% if current_filters.min_price or current_filters.max_price %}
+                        <div class="filter-tag">
+                            Price: KES {{ current_filters.min_price|default:"0" }} - KES {{ current_filters.max_price|default:"∞" }}
+                            <button type="button" class="remove-filter" onclick="removeFilter('price')">×</button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Products Header -->
+                <div class="products-header">
+                    <div class="results-summary">
+                        Showing {{ shoes.start_index }}-{{ shoes.end_index }} of {{ total_products }} products
+                    </div>
+                    
+                    <div class="header-controls">
+                        <div class="view-options">
+                            <button class="view-btn active" data-view="grid">
+                                <ion-icon name="grid-outline"></ion-icon>
+                            </button>
+                            <button class="view-btn" data-view="list">
+                                <ion-icon name="list-outline"></ion-icon>
+                            </button>
+                        </div>
+                        
+                        <select name="sort" class="sort-dropdown" onchange="updateSort(this.value)">
+                            <option value="newest" {% if current_filters.sort == 'newest' %}selected{% endif %}>Newest First</option>
+                            <option value="price_low" {% if current_filters.sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                            <option value="price_high" {% if current_filters.sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                            <option value="name_asc" {% if current_filters.sort == 'name_asc' %}selected{% endif %}>Name: A-Z</option>
+                            <option value="name_desc" {% if current_filters.sort == 'name_desc' %}selected{% endif %}>Name: Z-A</option>
+                            <option value="popular" {% if current_filters.sort == 'popular' %}selected{% endif %}>Most Popular</option>
+                            <option value="rating" {% if current_filters.sort == 'rating' %}selected{% endif %}>Highest Rated</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Products Grid -->
+                {% if shoes %}
+                <div class="products-grid" id="productsGrid">
+                    {% for shoe in shoes %}
+                    <div class="product-card">
+                        <div class="product-image">
+                            <a href="{% url 'product_detail' slug=shoe.slug %}">
+                                {% if shoe.images.all %}
+                                    <img src="{{ shoe.images.first.image.url }}" alt="{{ shoe.name }}">
+                                {% else %}
+                                    <img src="{% static 'images/product-1.jpg' %}" alt="{{ shoe.name }}">
+                                {% endif %}
+                            </a>
+                            
+                            {% if shoe.is_new_arrival %}
+                                <div class="product-badge new">New</div>
+                            {% elif shoe.discount_percentage %}
+                                <div class="product-badge sale">-{{ shoe.discount_percentage }}%</div>
+                            {% elif shoe.is_featured %}
+                                <div class="product-badge">Featured</div>
+                            {% endif %}
+                            
+                            <div class="product-actions">
+                                <button class="action-btn wishlist-btn" data-shoe-id="{{ shoe.id }}" 
+                                        title="Add to Wishlist">
+                                    <ion-icon name="heart-outline"></ion-icon>
+                                </button>
+                                <button class="action-btn compare-btn" data-shoe-id="{{ shoe.id }}" 
+                                        title="Compare">
+                                    <ion-icon name="repeat-outline"></ion-icon>
+                                </button>
+                                <button class="action-btn quick-view-btn" data-shoe-id="{{ shoe.id }}" 
+                                        title="Quick View">
+                                    <ion-icon name="eye-outline"></ion-icon>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="product-info">
+                            <div class="product-category">
+                                {{ shoe.get_gender_display }}
+                                {% if shoe.category %}
+                                    / {{ shoe.category.name }}
+                                {% endif %}
+                            </div>
+                            
+                            <h3 class="product-title">
+                                <a href="{% url 'product_detail' slug=shoe.slug %}">{{ shoe.name }}</a>
+                            </h3>
+                            
+                            {% if shoe.brand %}
+                            <div class="product-brand">{{ shoe.brand.name }}</div>
+                            {% endif %}
+                            
+                            <div class="product-price">
+                                <span class="current-price">KES {{ shoe.base_price }}</span>
+                                {% if shoe.compare_price and shoe.compare_price > shoe.base_price %}
+                                    <span class="original-price">KES {{ shoe.compare_price }}</span>
+                                    <span class="discount-badge">-{{ shoe.discount_percentage }}%</span>
+                                {% endif %}
+                            </div>
+                            
+                            {% if shoe.review_count > 0 %}
+                            <div class="product-rating">
+                                <div class="stars">
+                                    {% for i in "12345" %}
+                                        {% if i|add:0 <= shoe.average_rating %}
+                                            ★
+                                        {% else %}
+                                            ☆
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <span class="rating-count">({{ shoe.review_count }})</span>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="stock-status">
+                                {% if shoe.is_in_stock %}
+                                    {% if shoe.total_stock < 10 %}
+                                        <span class="low-stock">Only {{ shoe.total_stock }} left in stock</span>
+                                    {% else %}
+                                        <span class="in-stock">In Stock</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="out-of-stock">Out of Stock</span>
+                                {% endif %}
+                            </div>
+                            
+                            <button class="add-to-cart-btn quick-add-btn" 
+                                    data-shoe-id="{{ shoe.id }}"
+                                    {% if not shoe.is_in_stock %}disabled{% endif %}>
+                                {% if shoe.is_in_stock %}
+                                    Quick Add to Cart
+                                {% else %}
+                                    Out of Stock
+                                {% endif %}
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <!-- No Results -->
+                <div class="no-results">
+                    <div class="no-results-icon">👟</div>
+                    <h3>No products found</h3>
+                    <p>
+                        {% if search_query %}
+                            Sorry, we couldn't find any products matching "{{ search_query }}".
+                        {% else %}
+                            No products match your current filters.
+                        {% endif %}
+                        Try adjusting your search or filters.
+                    </p>
+                    <button class="clear-filters-btn" onclick="clearAllFilters()">
+                        Clear All Filters
+                    </button>
+                </div>
+                {% endif %}
+
+                <!-- Pagination -->
+                {% if shoes.has_other_pages %}
+                <nav class="pagination">
+                    {% if shoes.has_previous %}
+                        <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page=1" 
+                           class="pagination-btn">First</a>
+                        <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ shoes.previous_page_number }}" 
+                           class="pagination-btn">Previous</a>
+                    {% endif %}
+
+                    <span class="pagination-info">
+                        Page {{ shoes.number }} of {{ shoes.paginator.num_pages }}
+                    </span>
+
+                    {% if shoes.has_next %}
+                        <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ shoes.next_page_number }}" 
+                           class="pagination-btn">Next</a>
+                        <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ shoes.paginator.num_pages }}" 
+                           class="pagination-btn">Last</a>
+                    {% endif %}
+                </nav>
+                {% endif %}
+
+            </main>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Filter functionality
+function toggleFilter(filterId) {
+    const content = document.getElementById(filterId + '-content');
+    const toggle = content.previousElementSibling.querySelector('.filter-toggle');
+    
+    if (content.classList.contains('collapsed')) {
+        content.classList.remove('collapsed');
+        toggle.textContent = '−';
+    } else {
+        content.classList.add('collapsed');
+        toggle.textContent = '+';
+    }
+}
+
+function clearAllFilters() {
+    const url = new URL(window.location);
+    const searchParams = new URLSearchParams(url.search);
+    
+    // Keep only search parameter
+    const search = searchParams.get('search');
+    url.search = search ? `search=${search}` : '';
+    
+    window.location.href = url.href;
+}
+
+function removeFilter(filterName) {
+    const url = new URL(window.location);
+    const searchParams = new URLSearchParams(url.search);
+    
+    if (filterName === 'price') {
+        searchParams.delete('min_price');
+        searchParams.delete('max_price');
+    } else {
+        searchParams.delete(filterName);
+    }
+    
+    url.search = searchParams.toString();
+    window.location.href = url.href;
+}
+
+function updateSort(sortValue) {
+    const url = new URL(window.location);
+    const searchParams = new URLSearchParams(url.search);
+    
+    searchParams.set('sort', sortValue);
+    searchParams.delete('page'); // Reset to first page
+    
+    url.search = searchParams.toString();
+    window.location.href = url.href;
+}
+
+// Auto-submit form when filters change
+document.querySelectorAll('#filtersForm input[type="radio"], #filtersForm input[type="checkbox"]').forEach(input => {
+    input.addEventListener('change', function() {
+        document.getElementById('filtersForm').submit();
+    });
+});
+
+// Price range inputs
+document.querySelectorAll('.price-input').forEach(input => {
+    input.addEventListener('change', function() {
+        setTimeout(() => {
+            document.getElementById('filtersForm').submit();
+        }, 500);
+    });
+});
+
+// Quick add to cart functionality
+document.querySelectorAll('.quick-add-btn').forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const shoeId = this.dataset.shoeId;
+        
+        // For quick add, we need to show a size/color selector first
+        // or redirect to product page
+        window.location.href = `/products/shoe-${shoeId}/`;
+    });
+});
+
+// Wishlist functionality
+document.querySelectorAll('.wishlist-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const shoeId = this.dataset.shoeId;
+        // Add wishlist logic here
+        showNotification('Added to wishlist!', 'success');
+    });
+});
+
+// Compare functionality
+document.querySelectorAll('.compare-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const shoeId = this.dataset.shoeId;
+        // Add compare logic here
+        showNotification('Added to comparison!', 'success');
+    });
+});
+
+// View toggle functionality
+document.querySelectorAll('.view-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+        this.classList.add('active');
+        
+        const grid = document.getElementById('productsGrid');
+        if (this.dataset.view === 'list') {
+            grid.classList.add('list-view');
+        } else {
+            grid.classList.remove('list-view');
+        }
+    });
+});
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        background: ${type === 'success' ? '#28a745' : '#dc3545'};
+        animation: slideIn 0.3s ease;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease forwards';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Add CSS for animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

@@ -250,6 +250,19 @@ def add_to_cart(request):
                 messages.error(request, 'An error occurred while adding item to cart')
                 return redirect('product_detail', slug=variant.shoe.slug)
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import JsonResponse
+from django.db.models import Q, Min, Max
+from django.core.paginator import Paginator
+from django.views.decorators.http import require_POST
+from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+from .models import (
+    Shoe, ShoeCategory, Brand, Color, ShoeSize, Cart, CartItem, 
+    ShoeVariant, County, DeliveryArea
+)
 def product_list(request):
     """Product list with filtering, search and pagination"""
     shoes = Shoe.objects.filter(status='active').select_related(

@@ -479,29 +479,13 @@ def cart_summary(request):
     
     # Calculate totals
     subtotal = sum(item.total_price for item in cart_items)
-    
-    # Get shipping options based on user location or default
-    shipping_fee = 0
-    delivery_areas = DeliveryArea.objects.filter(is_active=True).select_related('county')
-    
-    if request.user.is_authenticated:
-        # Try to get user's default shipping address
-        default_address = request.user.addresses.filter(
-            address_type='shipping', 
-            is_default=True
-        ).first()
-        if default_address and default_address.delivery_area:
-            shipping_fee = default_address.shipping_fee
-    
-    total = subtotal + shipping_fee
+    total = subtotal  # No shipping costs
     
     context = {
         'cart': cart,
         'cart_items': cart_items,
         'subtotal': subtotal,
-        'shipping_fee': shipping_fee,
         'total': total,
-        'delivery_areas': delivery_areas,
     }
     
     return render(request, 'cart-summary.html', context)

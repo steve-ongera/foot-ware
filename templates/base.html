@@ -37,113 +37,150 @@
 
 <body id="top">
 
-  <!-- 
-    - #HEADER
-  -->
+  <!-- HEADER -->
+<header class="header" data-header>
+  <div class="container">
 
-  <header class="header" data-header>
-    <div class="container">
+    <div class="overlay" data-overlay></div>
 
-      <div class="overlay" data-overlay></div>
+    <a href="{% url 'home' %}" class="logo">
+      <img src="{% static 'assets/images/logo.svg' %}" width="160" height="50" alt="Footcap logo">
+    </a>
 
-      <a href="{% url 'home' %}" class="logo">
-        <img src="{% static 'assets/images/logo.svg' %}" width="160" height="50" alt="Footcap logo">
-      </a>
+    <button class="nav-open-btn" data-nav-open-btn aria-label="Open Menu">
+      <ion-icon name="menu-outline"></ion-icon>
+    </button>
 
-      <button class="nav-open-btn" data-nav-open-btn aria-label="Open Menu">
-        <ion-icon name="menu-outline"></ion-icon>
+    <nav class="navbar" data-navbar>
+
+      <button class="nav-close-btn" data-nav-close-btn aria-label="Close Menu">
+        <ion-icon name="close-outline"></ion-icon>
       </button>
 
-      <nav class="navbar" data-navbar>
+      <a href="{% url 'home' %}" class="logo">
+        <img src="{% static 'assets/images/logo.svg' %}" width="190" height="50" alt="Footcap logo">
+      </a>
 
-        <button class="nav-close-btn" data-nav-close-btn aria-label="Close Menu">
-          <ion-icon name="close-outline"></ion-icon>
-        </button>
+      <ul class="navbar-list">
 
-        <a href="{% url 'home' %}" class="logo">
-          <img src="{% static 'assets/images/logo.svg' %}" width="190" height="50" alt="Footcap logo">
-        </a>
+        <li class="navbar-item">
+          <a href="{% url 'home' %}" class="navbar-link">Home</a>
+        </li>
 
-        <ul class="navbar-list">
+        <li class="navbar-item">
+          <a href="#" class="navbar-link">About</a>
+        </li>
 
-          <li class="navbar-item">
-            <a href="{% url 'home' %}" class="navbar-link">Home</a>
-          </li>
+        <li class="navbar-item">
+          <a href="{% url 'products' %}" class="navbar-link">Products</a>
+        </li>
 
-          <li class="navbar-item">
-            <a href="#" class="navbar-link">About</a>
-          </li>
+        <!-- ✅ Dynamic categories -->
+        <li class="navbar-item dropdown" style="position: relative; list-style: none;">
 
-          <li class="navbar-item">
-            <a href="{% url 'products' %}" class="navbar-link">Products</a>
-          </li>
+          <a href="#" class="navbar-link" 
+            style="display: inline-block; padding: 10px 15px; color: #333; text-decoration: none; font-weight: 500;">
+            Categories
+          </a>
 
-          <li class="navbar-item">
-            <a href="{% url 'products' %}" class="navbar-link">Shop</a>
-          </li>
+          <ul class="dropdown-menu" 
+              style="display: none; position: absolute; top: 100%; left: 0; background: #fff; min-width: 180px; 
+                    border: 1px solid #ddd; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+                    padding: 8px 0; z-index: 999;">
+            {% for category in categories %}
+              <li style="list-style: none;">
+                <a href="{% url 'category_detail' slug=category.slug %}" 
+                  style="display: block; padding: 8px 14px; color: #333; text-decoration: none; font-size: 14px;">
+                  {{ category.name }}
+                </a>
+              </li>
+            {% empty %}
+              <li style="list-style: none; padding: 8px 14px; color: #888; font-size: 14px;">No categories</li>
+            {% endfor %}
+          </ul>
 
-          <li class="navbar-item">
-            <a href="#" class="navbar-link">Blog</a>
-          </li>
+        </li>
 
-          <li class="navbar-item">
-            <a href="#" class="navbar-link">Contact</a>
-          </li>
+        <!-- Inline dropdown hover behavior -->
+        <script>
+          document.addEventListener("DOMContentLoaded", function () {
+            const dropdown = document.querySelector(".navbar-item.dropdown");
+            const menu = dropdown.querySelector(".dropdown-menu");
 
-        </ul>
+            dropdown.addEventListener("mouseenter", () => {
+              menu.style.display = "block";
+            });
 
-        <ul class="nav-action-list">
+            dropdown.addEventListener("mouseleave", () => {
+              menu.style.display = "none";
+            });
+          });
+        </script>
 
-          <li>
-            <button class="nav-action-btn" id="search-btn">
-              <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
 
-              <span class="nav-action-text">Search</span>
-            </button>
-          </li>
+        <li class="navbar-item">
+          <a href="#" class="navbar-link">Blog</a>
+        </li>
 
-          <li>
-            {% if user.is_authenticated %}
-            <a href="#" class="nav-action-btn">
-              <ion-icon name="person-outline" aria-hidden="true"></ion-icon>
+        <li class="navbar-item">
+          <a href="#" class="navbar-link">Orders</a>
+        </li>
 
-              <span class="nav-action-text">{{ user.first_name|default:user.username }}</span>
-            </a>
-            {% else %}
-            <a href="#" class="nav-action-btn">
-              <ion-icon name="person-outline" aria-hidden="true"></ion-icon>
+      </ul>
 
-              <span class="nav-action-text">Login / Register</span>
-            </a>
-            {% endif %}
-          </li>
+      <ul class="nav-action-list">
 
-          <li>
-            <button class="nav-action-btn" id="wishlist-btn">
-              <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
+        <li>
+          <button class="nav-action-btn" id="search-btn">
+            <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
+            <span class="nav-action-text">Search</span>
+          </button>
+        </li>
 
-              <span class="nav-action-text">Wishlist</span>
+        <li>
+          {% if user.is_authenticated %}
+          <a href="#" class="nav-action-btn">
+            <ion-icon name="person-outline" aria-hidden="true"></ion-icon>
+            <span class="nav-action-text">{{ user.first_name|default:user.username }}</span>
+          </a>
+          {% else %}
+          <a href="#" class="nav-action-btn">
+            <ion-icon name="person-outline" aria-hidden="true"></ion-icon>
+            <span class="nav-action-text">Login / Register</span>
+          </a>
+          {% endif %}
+        </li>
 
-              <data class="nav-action-badge" value="0" aria-hidden="true" id="wishlist-count">0</data>
-            </button>
-          </li>
+        <li>
+          <button class="nav-action-btn" id="wishlist-btn">
+            <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
+            <span class="nav-action-text">Wishlist</span>
+            <data class="nav-action-badge" value="0" aria-hidden="true" id="wishlist-count">0</data>
+          </button>
+        </li>
 
-          <li>
-            <button class="nav-action-btn" id="cart-btn">
-              <ion-icon name="bag-outline" aria-hidden="true"></ion-icon>
+        <!-- ✅ Cart with context processor -->
+        <li>
+          <a href="{% url 'cart_summary' %}" class="nav-action-btn" id="cart-btn">
+            <ion-icon name="bag-outline" aria-hidden="true"></ion-icon>
 
-              <data class="nav-action-text" value="0.00" id="cart-total">Basket: <strong>$0.00</strong></data>
+            <span class="nav-action-text">
+              Basket: <strong>{{ currency }} {{ cart_total|floatformat:2 }}</strong>
+            </span>
 
-              <data class="nav-action-badge" value="0" aria-hidden="true" id="cart-count">0</data>
-            </button>
-          </li>
+            <data class="nav-action-badge" value="{{ cart_count }}" aria-hidden="true" id="cart-count">
+              {{ cart_count }}
+            </data>
+          </a>
+        </li>
 
-        </ul>
+      </ul>
 
-      </nav>
+    </nav>
 
-    </div>
-  </header>
+  </div>
+</header>
+
 
   <main>
     {% block content %}

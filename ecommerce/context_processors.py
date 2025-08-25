@@ -1,4 +1,4 @@
-# context_processors.py
+# ecommerce is my app context_processors.py
 from django.db import models
 from .models import Cart, ShoeCategory
 

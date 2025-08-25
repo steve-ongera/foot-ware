@@ -489,7 +489,7 @@
 
                         <div class="item-details">
                             <div class="item-name">
-                                <a href="{{ item.shoe.get_absolute_url }}">{{ item.shoe.name }}</a>
+                                <a href="#">{{ item.shoe.name }}</a>
                             </div>
                             <div class="item-variant">
                                 <strong>Brand:</strong> {{ item.shoe.brand.name|default:"N/A" }}<br>
@@ -777,7 +777,7 @@ function proceedToCheckout() {
     localStorage.setItem('selectedDeliveryArea', deliverySelect.value);
     
     // Redirect to checkout
-    window.location.href = "{% url 'checkout' %}";
+    window.location.href = "#";
 }
 
 // Show notification

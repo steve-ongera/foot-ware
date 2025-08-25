@@ -250,35 +250,69 @@ def add_to_cart(request):
                 messages.error(request, 'An error occurred while adding item to cart')
                 return redirect('product_detail', slug=variant.shoe.slug)
 
-def products(request):
-    """Products listing page with filters"""
+def product_list(request):
+    """Product list with filtering, search and pagination"""
     shoes = Shoe.objects.filter(status='active').select_related(
         'brand', 'category'
-    ).prefetch_related('images')
+    ).prefetch_related(
+        'images', 'variants', 'available_colors', 'available_sizes'
+    )
     
-    # Filter by category
-    category_slug = request.GET.get('category')
-    if category_slug:
-        shoes = shoes.filter(category__slug=category_slug)
+    # Get all filter options
+    categories = ShoeCategory.objects.filter(is_active=True)
+    brands = Brand.objects.filter(is_active=True)
+    colors = Color.objects.filter(is_active=True)
+    sizes = ShoeSize.objects.filter(is_active=True).order_by('sort_order')
     
-    # Filter by brand
-    brand_slug = request.GET.get('brand')
-    if brand_slug:
-        shoes = shoes.filter(brand__slug=brand_slug)
+    # Get price range
+    price_range = shoes.aggregate(
+        min_price=Min('base_price'),
+        max_price=Max('base_price')
+    )
     
-    # Filter by gender
-    gender = request.GET.get('gender')
-    if gender:
-        shoes = shoes.filter(gender=gender)
-    
-    # Search
-    search_query = request.GET.get('search')
+    # Search functionality
+    search_query = request.GET.get('search', '').strip()
     if search_query:
         shoes = shoes.filter(
             Q(name__icontains=search_query) |
             Q(description__icontains=search_query) |
-            Q(brand__name__icontains=search_query)
+            Q(brand__name__icontains=search_query) |
+            Q(category__name__icontains=search_query) |
+            Q(material__icontains=search_query)
         )
+    
+    # Category filter
+    category_slug = request.GET.get('category')
+    selected_category = None
+    if category_slug:
+        selected_category = get_object_or_404(ShoeCategory, slug=category_slug)
+        shoes = shoes.filter(category=selected_category)
+    
+    # Brand filter
+    brand_slug = request.GET.get('brand')
+    selected_brand = None
+    if brand_slug:
+        selected_brand = get_object_or_404(Brand, slug=brand_slug)
+        shoes = shoes.filter(brand=selected_brand)
+    
+    # Gender filter
+    gender = request.GET.get('gender')
+    if gender:
+        shoes = shoes.filter(gender=gender)
+    
+    # Color filter
+    color_id = request.GET.get('color')
+    selected_color = None
+    if color_id:
+        selected_color = get_object_or_404(Color, id=color_id)
+        shoes = shoes.filter(available_colors=selected_color)
+    
+    # Size filter
+    size_id = request.GET.get('size')
+    selected_size = None
+    if size_id:
+        selected_size = get_object_or_404(ShoeSize, id=size_id)
+        shoes = shoes.filter(available_sizes=selected_size)
     
     # Price range filter
     min_price = request.GET.get('min_price')
@@ -288,39 +322,368 @@ def products(request):
     if max_price:
         shoes = shoes.filter(base_price__lte=max_price)
     
+    # Special filters
+    if request.GET.get('featured'):
+        shoes = shoes.filter(is_featured=True)
+    if request.GET.get('new_arrival'):
+        shoes = shoes.filter(is_new_arrival=True)
+    if request.GET.get('on_sale'):
+        shoes = shoes.filter(is_on_sale=True)
+    if request.GET.get('in_stock'):
+        shoes = shoes.filter(variants__stock_quantity__gt=0).distinct()
+    
     # Sorting
-    sort_by = request.GET.get('sort', 'name')
+    sort_by = request.GET.get('sort', 'newest')
     if sort_by == 'price_low':
         shoes = shoes.order_by('base_price')
     elif sort_by == 'price_high':
         shoes = shoes.order_by('-base_price')
-    elif sort_by == 'newest':
-        shoes = shoes.order_by('-created_at')
-    elif sort_by == 'popular':
-        shoes = shoes.order_by('-view_count')
-    else:
+    elif sort_by == 'name_asc':
         shoes = shoes.order_by('name')
+    elif sort_by == 'name_desc':
+        shoes = shoes.order_by('-name')
+    elif sort_by == 'popular':
+        shoes = shoes.order_by('-sales_count', '-view_count')
+    elif sort_by == 'rating':
+        shoes = shoes.order_by('-sales_count')  # You can implement proper rating sorting
+    else:  # newest
+        shoes = shoes.order_by('-created_at')
     
     # Pagination
-    paginator = Paginator(shoes, 12)  # Show 12 products per page
+    paginator = Paginator(shoes, 12)  # 12 products per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    # Get filter options
-    categories = ShoeCategory.objects.filter(is_active=True)
-    brands = Brand.objects.filter(is_active=True)
-    
     context = {
-        'page_obj': page_obj,
+        'shoes': page_obj,
         'categories': categories,
         'brands': brands,
-        'current_category': category_slug,
-        'current_brand': brand_slug,
-        'current_gender': gender,
+        'colors': colors,
+        'sizes': sizes,
+        'price_range': price_range,
+        'selected_category': selected_category,
+        'selected_brand': selected_brand,
+        'selected_color': selected_color,
+        'selected_size': selected_size,
         'search_query': search_query,
-        'min_price': min_price,
-        'max_price': max_price,
-        'sort_by': sort_by,
+        'current_filters': {
+            'category': category_slug,
+            'brand': brand_slug,
+            'gender': gender,
+            'color': color_id,
+            'size': size_id,
+            'min_price': min_price,
+            'max_price': max_price,
+            'sort': sort_by,
+            'search': search_query,
+        },
+        'total_products': paginator.count,
     }
     
     return render(request, 'products.html', context)
+
+def category_detail(request, slug):
+    """Category detail view showing products in specific category"""
+    category = get_object_or_404(ShoeCategory, slug=slug, is_active=True)
+    
+    shoes = Shoe.objects.filter(
+        category=category, 
+        status='active'
+    ).select_related('brand').prefetch_related('images', 'variants')
+    
+    # Apply additional filters if any
+    brands = Brand.objects.filter(shoes__category=category, is_active=True).distinct()
+    
+    # Brand filter
+    brand_slug = request.GET.get('brand')
+    selected_brand = None
+    if brand_slug:
+        selected_brand = get_object_or_404(Brand, slug=brand_slug)
+        shoes = shoes.filter(brand=selected_brand)
+    
+    # Price filter
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    if min_price:
+        shoes = shoes.filter(base_price__gte=min_price)
+    if max_price:
+        shoes = shoes.filter(base_price__lte=max_price)
+    
+    # Gender filter
+    gender = request.GET.get('gender')
+    if gender:
+        shoes = shoes.filter(gender=gender)
+    
+    # Sorting
+    sort_by = request.GET.get('sort', 'newest')
+    if sort_by == 'price_low':
+        shoes = shoes.order_by('base_price')
+    elif sort_by == 'price_high':
+        shoes = shoes.order_by('-base_price')
+    elif sort_by == 'name_asc':
+        shoes = shoes.order_by('name')
+    elif sort_by == 'popular':
+        shoes = shoes.order_by('-sales_count', '-view_count')
+    else:
+        shoes = shoes.order_by('-created_at')
+    
+    # Pagination
+    paginator = Paginator(shoes, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Get price range for this category
+    price_range = shoes.aggregate(
+        min_price=Min('base_price'),
+        max_price=Max('base_price')
+    )
+    
+    context = {
+        'category': category,
+        'shoes': page_obj,
+        'brands': brands,
+        'selected_brand': selected_brand,
+        'price_range': price_range,
+        'current_filters': {
+            'brand': brand_slug,
+            'gender': gender,
+            'min_price': min_price,
+            'max_price': max_price,
+            'sort': sort_by,
+        },
+        'total_products': paginator.count,
+    }
+    
+    return render(request, 'products/category-detail.html', context)
+
+
+def cart_summary(request):
+    """Cart summary view"""
+    cart = get_or_create_cart(request)
+    cart_items = cart.items.select_related(
+        'shoe', 'variant__color', 'variant__size', 'shoe__brand'
+    ).prefetch_related('shoe__images')
+    
+    # Calculate totals
+    subtotal = sum(item.total_price for item in cart_items)
+    
+    # Get shipping options based on user location or default
+    shipping_fee = 0
+    delivery_areas = DeliveryArea.objects.filter(is_active=True).select_related('county')
+    
+    if request.user.is_authenticated:
+        # Try to get user's default shipping address
+        default_address = request.user.addresses.filter(
+            address_type='shipping', 
+            is_default=True
+        ).first()
+        if default_address and default_address.delivery_area:
+            shipping_fee = default_address.shipping_fee
+    
+    total = subtotal + shipping_fee
+    
+    context = {
+        'cart': cart,
+        'cart_items': cart_items,
+        'subtotal': subtotal,
+        'shipping_fee': shipping_fee,
+        'total': total,
+        'delivery_areas': delivery_areas,
+    }
+    
+    return render(request, 'cart/cart-summary.html', context)
+
+
+@require_POST
+def add_to_cart(request):
+    """Add item to cart via AJAX"""
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        try:
+            variant_id = request.POST.get('variant_id')
+            quantity = int(request.POST.get('quantity', 1))
+            
+            if not variant_id:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Please select size and color'
+                })
+            
+            variant = get_object_or_404(ShoeVariant, id=variant_id)
+            
+            if quantity > variant.stock_quantity:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Only {variant.stock_quantity} items available'
+                })
+            
+            cart = get_or_create_cart(request)
+            cart_item, created = CartItem.objects.get_or_create(
+                cart=cart,
+                variant=variant,
+                defaults={
+                    'shoe': variant.shoe,
+                    'quantity': quantity
+                }
+            )
+            
+            if not created:
+                new_quantity = cart_item.quantity + quantity
+                if new_quantity > variant.stock_quantity:
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'Cannot add more items. Only {variant.stock_quantity} available'
+                    })
+                cart_item.quantity = new_quantity
+                cart_item.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Item added to cart successfully',
+                'cart_count': cart.total_items,
+                'cart_total': f'KES {cart.total_price:,.2f}'
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': 'An error occurred while adding to cart'
+            })
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request'})
+
+
+@require_POST
+def update_cart_item(request):
+    """Update cart item quantity via AJAX"""
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        try:
+            data = json.loads(request.body)
+            item_id = data.get('item_id')
+            quantity = int(data.get('quantity', 1))
+            
+            cart = get_or_create_cart(request)
+            cart_item = get_object_or_404(CartItem, id=item_id, cart=cart)
+            
+            if quantity <= 0:
+                cart_item.delete()
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Item removed from cart',
+                    'cart_count': cart.total_items,
+                    'cart_total': cart.total_price,
+                    'item_removed': True
+                })
+            
+            if quantity > cart_item.variant.stock_quantity:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Only {cart_item.variant.stock_quantity} items available'
+                })
+            
+            cart_item.quantity = quantity
+            cart_item.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Cart updated successfully',
+                'cart_count': cart.total_items,
+                'cart_total': cart.total_price,
+                'item_total': cart_item.total_price,
+                'subtotal': sum(item.total_price for item in cart.items.all())
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': 'An error occurred while updating cart'
+            })
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request'})
+
+
+@require_POST
+def remove_cart_item(request):
+    """Remove item from cart via AJAX"""
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        try:
+            data = json.loads(request.body)
+            item_id = data.get('item_id')
+            
+            cart = get_or_create_cart(request)
+            cart_item = get_object_or_404(CartItem, id=item_id, cart=cart)
+            cart_item.delete()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Item removed from cart',
+                'cart_count': cart.total_items,
+                'cart_total': cart.total_price,
+                'subtotal': sum(item.total_price for item in cart.items.all())
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': 'An error occurred while removing item'
+            })
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request'})
+
+
+@require_POST
+def clear_cart(request):
+    """Clear entire cart via AJAX"""
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        try:
+            cart = get_or_create_cart(request)
+            cart.items.all().delete()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Cart cleared successfully',
+                'cart_count': 0,
+                'cart_total': 0
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': 'An error occurred while clearing cart'
+            })
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request'})
+
+
+def get_or_create_cart(request):
+    """Get or create cart for user or session"""
+    if request.user.is_authenticated:
+        cart, created = Cart.objects.get_or_create(
+            user=request.user,
+            defaults={'session_key': None}
+        )
+    else:
+        session_key = request.session.session_key
+        if not session_key:
+            request.session.create()
+            session_key = request.session.session_key
+        
+        cart, created = Cart.objects.get_or_create(
+            session_key=session_key,
+            user=None
+        )
+    
+    return cart
+
+
+def get_cart_variants_json(shoe):
+    """Get variants data as JSON for JavaScript"""
+    variants = {}
+    for variant in shoe.variants.all():
+        key = f"{variant.color.id}-{variant.size.id}"
+        variants[key] = {
+            'id': variant.id,
+            'price': str(variant.final_price),
+            'stock': variant.stock_quantity,
+            'sku': variant.sku
+        }
+    return json.dumps(variants)

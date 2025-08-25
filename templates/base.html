@@ -11,7 +11,7 @@
   <!-- 
     - favicon
   -->
-  <link rel="shortcut icon" href="{% static 'images/favicon.svg' %}" type="image/svg+xml">
+  <link rel="shortcut icon" href="{% static 'assets/images/favicon.svg' %}" type="image/svg+xml">
 
   <!-- 
     - custom css link
@@ -31,7 +31,7 @@
   <!-- 
     - preload banner
   -->
-  <link rel="preload" href="{% static 'images/hero-banner.png' %}" as="image">
+  <link rel="preload" href="{% static 'assets/images/hero-banner.png' %}" as="image">
 
 </head>
 
@@ -47,7 +47,7 @@
       <div class="overlay" data-overlay></div>
 
       <a href="{% url 'home' %}" class="logo">
-        <img src="{% static 'images/logo.svg' %}" width="160" height="50" alt="Footcap logo">
+        <img src="{% static 'assets/images/logo.svg' %}" width="160" height="50" alt="Footcap logo">
       </a>
 
       <button class="nav-open-btn" data-nav-open-btn aria-label="Open Menu">
@@ -61,7 +61,7 @@
         </button>
 
         <a href="{% url 'home' %}" class="logo">
-          <img src="{% static 'images/logo.svg' %}" width="190" height="50" alt="Footcap logo">
+          <img src="{% static 'assets/images/logo.svg' %}" width="190" height="50" alt="Footcap logo">
         </a>
 
         <ul class="navbar-list">
@@ -162,7 +162,7 @@
         <div class="footer-brand">
 
           <a href="{% url 'home' %}" class="logo">
-            <img src="{% static 'images/logo.svg' %}" width="160" height="50" alt="Footcap logo">
+            <img src="{% static 'assets/images/logo.svg' %}" width="160" height="50" alt="Footcap logo">
           </a>
 
           <ul class="social-list">
@@ -353,7 +353,7 @@
   <!-- 
     - custom js link
   -->
-  <script src="{% static 'js/script.js' %}"></script>
+  <script src="{% static 'assets/js/script.js' %}"></script>
   {% block extra_js %}{% endblock %}
 
   <!-- 

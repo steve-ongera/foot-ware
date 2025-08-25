@@ -209,9 +209,9 @@
               </h3>
 
               <data class="card-price" value="{{ shoe.base_price }}">
-                ${{ shoe.base_price }}
+                KES{{ shoe.base_price }}
                 {% if shoe.compare_price and shoe.compare_price > shoe.base_price %}
-                  <del>${{ shoe.compare_price }}</del>
+                  <del>KES{{ shoe.compare_price }}</del>
                 {% endif %}
               </data>
 
@@ -378,9 +378,9 @@
                 </h3>
 
                 <data class="card-price" value="{{ shoe.base_price }}">
-                  ${{ shoe.base_price }}
+                  KES{{ shoe.base_price }}
                   {% if shoe.compare_price and shoe.compare_price > shoe.base_price %}
-                    <del>${{ shoe.compare_price }}</del>
+                    <del>KES{{ shoe.compare_price }}</del>
                   {% endif %}
                 </data>
 
@@ -422,7 +422,7 @@
           <div class="service-card">
 
             <div class="card-icon">
-              <img src="{% static 'images/service-1.png' %}" width="53" height="28" loading="lazy" alt="Service icon">
+              <img src="{% static 'assets/images/service-1.png' %}" width="53" height="28" loading="lazy" alt="Service icon">
             </div>
 
             <div>
@@ -440,7 +440,7 @@
           <div class="service-card">
 
             <div class="card-icon">
-              <img src="{% static 'images/service-2.png' %}" width="43" height="35" loading="lazy" alt="Service icon">
+              <img src="{% static 'assets/images/service-2.png' %}" width="43" height="35" loading="lazy" alt="Service icon">
             </div>
 
             <div>
@@ -458,7 +458,7 @@
           <div class="service-card">
 
             <div class="card-icon">
-              <img src="{% static 'images/service-3.png' %}" width="40" height="40" loading="lazy" alt="Service icon">
+              <img src="{% static 'assets/images/service-3.png' %}" width="40" height="40" loading="lazy" alt="Service icon">
             </div>
 
             <div>
@@ -476,7 +476,7 @@
           <div class="service-card">
 
             <div class="card-icon">
-              <img src="{% static 'images/service-4.png' %}" width="40" height="40" loading="lazy" alt="Service icon">
+              <img src="{% static 'assets/images/service-4.png' %}" width="40" height="40" loading="lazy" alt="Service icon">
             </div>
 
             <div>
@@ -504,7 +504,7 @@
     <ul class="insta-post-list has-scrollbar">
 
       <li class="insta-post-item">
-        <img src="{% static 'images/insta-1.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
+        <img src="{% static 'assets/images/insta-1.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
           class="insta-post-banner image-contain">
 
         <a href="#" class="insta-post-link">
@@ -513,7 +513,7 @@
       </li>
 
       <li class="insta-post-item">
-        <img src="{% static 'images/insta-2.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
+        <img src="{% static 'assets/images/insta-2.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
           class="insta-post-banner image-contain">
 
         <a href="#" class="insta-post-link">
@@ -522,7 +522,7 @@
       </li>
 
       <li class="insta-post-item">
-        <img src="{% static 'images/insta-3.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
+        <img src="{% static 'assets/images/insta-3.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
           class="insta-post-banner image-contain">
 
         <a href="#" class="insta-post-link">
@@ -531,7 +531,7 @@
       </li>
 
       <li class="insta-post-item">
-        <img src="{% static 'images/insta-4.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
+        <img src="{% static 'assets/images/insta-4.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
           class="insta-post-banner image-contain">
 
         <a href="#" class="insta-post-link">
@@ -540,7 +540,7 @@
       </li>
 
       <li class="insta-post-item">
-        <img src="{% static 'images/insta-5.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
+        <img src="{% static 'assets/images/insta-5.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
           class="insta-post-banner image-contain">
 
         <a href="#" class="insta-post-link">
@@ -549,7 +549,7 @@
       </li>
 
       <li class="insta-post-item">
-        <img src="{% static 'images/insta-6.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
+        <img src="{% static 'assets/images/insta-6.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
           class="insta-post-banner image-contain">
 
         <a href="#" class="insta-post-link">
@@ -558,7 +558,7 @@
       </li>
 
       <li class="insta-post-item">
-        <img src="{% static 'images/insta-7.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
+        <img src="{% static 'assets/images/insta-7.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
           class="insta-post-banner image-contain">
 
         <a href="#" class="insta-post-link">
@@ -567,7 +567,7 @@
       </li>
 
       <li class="insta-post-item">
-        <img src="{% static 'images/insta-8.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
+        <img src="{% static 'assets/images/insta-8.jpg' %}" width="100" height="100" loading="lazy" alt="Instagram post"
           class="insta-post-banner image-contain">
 
         <a href="#" class="insta-post-link">
